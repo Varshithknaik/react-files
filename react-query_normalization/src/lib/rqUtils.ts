@@ -1,4 +1,4 @@
-import { useQuery, type QueryKey } from '@tanstack/react-query'
+import { useMutation, useQuery, type QueryKey } from '@tanstack/react-query'
 import { ZodError, type ZodType } from 'zod'
 
 // ----------------------
@@ -47,6 +47,7 @@ export function useCreateValidatedQuery<TQuery, TSelected = TQuery>({
   queryFn: () => Promise<TQuery>
   schema: ZodType<TQuery>
   select?: (data: TQuery) => TSelected
+  prefetch?: boolean
 }) {
   return useQuery({
     queryKey: key,
@@ -62,5 +63,36 @@ export function useCreateValidatedQuery<TQuery, TSelected = TQuery>({
       return validated.data
     },
     select,
+  })
+}
+
+export function useValidatedMutation<Input, Output>({
+  inputSchema,
+  outputSchema,
+  mutationFn,
+}: {
+  inputSchema: ZodType<Input>
+  outputSchema: ZodType<Output>
+  mutationFn: (input: Input) => Promise<Output>
+}) {
+  return useMutation({
+    mutationFn: async (input: Input) => {
+      const validated = safeValidate(inputSchema, input)
+      if (!validated.ok) {
+        throw {
+          type: 'mutation_validation_error',
+          issues: validated.error,
+        }
+      }
+      const output = await mutationFn(validated.data)
+      const validatedOutput = safeValidate(outputSchema, output)
+      if (!validatedOutput.ok) {
+        throw {
+          type: 'mutation_validation_error',
+          issues: validatedOutput.error,
+        }
+      }
+      return validatedOutput.data
+    },
   })
 }
