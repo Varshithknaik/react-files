@@ -12,13 +12,44 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    password: {
+      type: String,
+      required: true,
+    },
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 )
 
-export const User = mongoose.model('User', userSchema)
+const adminSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
+  }
+)
 
 const courseSchema = new mongoose.Schema({
   title: {
@@ -33,11 +64,36 @@ const courseSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  instructor: {
+  imageUrl: {
+    type: String,
+    required: true,
+  },
+  creatorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
 })
 
-export const Course = mongoose.model('Course', courseSchema)
+const purchaseSchema = new mongoose.Schema(
+  {
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course',
+      required: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+)
+
+export const userModal = mongoose.model('User', userSchema)
+export const adminModal = mongoose.model('Admin', adminSchema)
+export const courseModal = mongoose.model('Course', courseSchema)
+export const purchaseModal = mongoose.model('Purchase', purchaseSchema)

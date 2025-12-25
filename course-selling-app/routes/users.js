@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { loginSchema } from '../schema.js'
-import { User } from '../db.js'
 import express from 'express'
+import { userModal } from '../db.js'
 
 export const userRouter = express.Router()
 
@@ -21,7 +21,7 @@ userRouter.post('/signup', async (req, res, next) => {
   const hashedPassword = await bcrypt.hash(password, 10)
 
   try {
-    await User.create({
+    await userModal.create({
       email,
       password: hashedPassword,
     })
