@@ -7,9 +7,14 @@ import { userModal } from '../db.js'
 export const userRouter = express.Router()
 
 userRouter.post('/signup', async (req, res, next) => {
-  const { email, password } = req.body
+  const { email, password, firstName, lastName } = req.body
 
-  const parserd = loginSchema.safeParse({ email, password })
+  const parserd = signupSchema.safeParse({
+    email,
+    password,
+    firstName,
+    lastName,
+  })
 
   if (!parserd.success) {
     res.status(400).json({
@@ -35,7 +40,7 @@ userRouter.post('/signup', async (req, res, next) => {
   }
 })
 
-userRouter.post('/login', (req, res, next) => {
+userRouter.post('/login', async (req, res, next) => {
   const { password, email } = req.body
   const parserd = loginSchema.safeParse({ password, email })
 
@@ -47,7 +52,7 @@ userRouter.post('/login', (req, res, next) => {
   }
 
   try {
-    const user = User.findOne({ email })
+    const user = await userModal.findOne({ email })
     if (!user) {
       res.status(404).json({
         message: 'User Not Found',
