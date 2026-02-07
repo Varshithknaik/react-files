@@ -35,7 +35,7 @@ notificationRouter.post('/subscribe', (req, res) => {
   res.status(201).json({ message: 'Subscription created' })
 })
 
-notificationRouter.post('/notifications', async (req, res) => {
+notificationRouter.post('/', async (req, res) => {
   const notification = notificationPayloadSchema.safeParse(req.body)
 
   if (!notification.success) {

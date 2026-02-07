@@ -1,5 +1,8 @@
 import webPush from 'web-push'
 import type { PushSubscriptionDTO, Notification } from './schema/index.js'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 webPush.setVapidDetails(
   process.env.VAPID_SUBJECT!,
@@ -12,7 +15,6 @@ export const sendPush = async (
   notification: Notification
 ) => {
   const payload = JSON.stringify(notification)
-
   await Promise.allSettled(
     subs.map((sub) => webPush.sendNotification(sub, payload))
   )

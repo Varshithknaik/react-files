@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
-import { useNotificatiionStore } from './useNotificationStore'
+import { useNotificationStore } from './useNotificationStore'
 import { NotificationSchema } from '../schema/notifications.schema'
 import { BASE_URL } from '../config'
 
 export const useNotificationSSE = () => {
-  const { upsert } = useNotificatiionStore()
+  const { upsert } = useNotificationStore()
 
   useEffect(() => {
     const source = new EventSource(`${BASE_URL}/api/notifications/sse`)

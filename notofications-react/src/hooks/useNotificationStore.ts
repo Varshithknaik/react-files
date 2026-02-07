@@ -20,7 +20,7 @@ export const withSchemaSelectStrict = <S extends z.ZodTypeAny>(schema: S) => {
   }
 }
 
-export const useNotificatiionStore = () => {
+export const useNotificationStore = () => {
   const queryClient = useQueryClient()
 
   const query = useQuery<NotificationStore>({
