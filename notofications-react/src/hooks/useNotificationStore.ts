@@ -6,6 +6,7 @@ import {
   type NotificationStore,
 } from '../schema/notifications.schema'
 import { useCallback } from 'react'
+import { BASE_URL } from '../config'
 
 export const withSchemaSelectStrict = <S extends z.ZodTypeAny>(schema: S) => {
   return (data: unknown): z.infer<S> => {
@@ -25,7 +26,7 @@ export const useNotificatiionStore = () => {
   const query = useQuery<NotificationStore>({
     queryKey: ['notifications'],
     queryFn: async () => {
-      const response = await fetch('/api/notifications')
+      const response = await fetch(`${BASE_URL}/api/notifications`)
       return response.json()
     },
     select: withSchemaSelectStrict(NotificationStoreSchema),
