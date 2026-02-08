@@ -11,4 +11,6 @@ export const NotificationSchema = notificationPayloadSchema.extend({
   createdAt: z.string(),
 })
 
+export const NotificationStoreSchema = z.array(NotificationSchema)
+
 export type Notification = z.infer<typeof NotificationSchema>
