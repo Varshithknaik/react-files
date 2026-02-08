@@ -72,11 +72,12 @@ notificationRouter.post('/', async (req, res) => {
   }
 })
 
-notificationRouter.put('read/:id', (req, res) => {
-  const { id } = req.params
+notificationRouter.put('/read/:id', (req, res) => {
+  const { id = '' } = req.params
   try {
     markNotificationAsRead(id)
-  } catch (e) {
     res.status(200).json({ message: 'Notification marked as read' })
+  } catch (e) {
+    res.status(401).json({ message: 'Notification not found' })
   }
 })

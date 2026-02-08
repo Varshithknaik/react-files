@@ -30,15 +30,6 @@ export const useNotificationStore = () => {
     [queryClient]
   )
 
-  // const markAsRead = (id: string) => {
-  //   queryClient.setQueryData<NotificationStore>(
-  //     ['notifications'],
-  //     (old = []) => {
-  //       return old.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-  //     }
-  //   )
-  // }
-
   return {
     notifications: query.data ?? [],
     isLoading: query.isLoading,

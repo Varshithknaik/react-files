@@ -7,7 +7,7 @@ export const notificationPayloadSchema = z.object({
 
 export const NotificationSchema = notificationPayloadSchema.extend({
   id: z.string(),
-  isRead: z.boolean().default(false),
+  isRead: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)),
   createdAt: z.string(),
 })
 
