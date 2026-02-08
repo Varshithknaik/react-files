@@ -11,7 +11,6 @@ export const useNotificationSSE = () => {
 
     source.addEventListener('message', (event) => {
       const data = JSON.parse(event.data)
-
       const parsed = NotificationSchema.safeParse(data)
 
       if (!parsed.success) {

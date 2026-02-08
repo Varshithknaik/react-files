@@ -1,5 +1,10 @@
 import { Router } from 'express'
-import { notifications, pushSubscriptions } from '../store.js'
+import {
+  getAllNotifications,
+  getAllSubscriptions,
+  insertNotification,
+  saveSubscription,
+} from '../store.js'
 import { pushSubscriptionSchema } from '../schema/pushSubscription.schema.js'
 import {
   notificationPayloadSchema,
@@ -11,7 +16,7 @@ import { sendPush } from '../push.js'
 export const notificationRouter = Router()
 
 notificationRouter.get('/', (_, res) => {
-  res.status(200).json(notifications)
+  res.status(200).json(getAllNotifications())
 })
 
 notificationRouter.get('/sse', (req, res) => {
@@ -28,11 +33,13 @@ notificationRouter.post('/subscribe', (req, res) => {
     return
   }
 
-  if (!pushSubscriptions.find((s) => s.endpoint === sub.data.endpoint)) {
-    pushSubscriptions.push(sub.data)
+  try {
+    saveSubscription(sub.data)
+    res.status(201).json({ message: 'Subscription created' })
+  } catch (e) {
+    res.status(500).json({ error: 'Internal server error' })
+    return
   }
-
-  res.status(201).json({ message: 'Subscription created' })
 })
 
 notificationRouter.post('/', async (req, res) => {
@@ -50,13 +57,16 @@ notificationRouter.post('/', async (req, res) => {
     ...notification.data,
   }
 
-  notifications.push(payload)
-
-  // SSE
-  broadcastSSE(payload)
-
-  // push
-  await sendPush(pushSubscriptions, payload)
-
-  res.status(201).json({ message: 'Notification sent' })
+  try {
+    insertNotification(payload)
+    // SSE
+    // TODO: have pub/sub mechanism to have instead of broadcasting
+    broadcastSSE(payload)
+    // push
+    await sendPush(getAllSubscriptions(), payload)
+    res.status(201).json({ message: 'Notification sent' })
+  } catch (e) {
+    res.status(500).json({ error: 'Internal server error' })
+    return
+  }
 })

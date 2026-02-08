@@ -6,11 +6,7 @@ import {
   pushSubscriptionSchema,
 } from './schema/index.js'
 
-export const notifications: Notification[] = []
-
 export const sseClients = new Set<import('express').Response>()
-
-export const pushSubscriptions: PushSubscriptionDTO[] = []
 
 export const getAllNotifications = (): Notification[] => {
   const response = db
