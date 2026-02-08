@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNotificationSSE } from '../hooks/useNotificationSSE'
 import { useNotificationPush } from '../hooks/useWebPushSubscription'
 import { useNotificationStore } from '../hooks/useNotificationStore'
-import { BASE_URL } from '../config'
+import { usePostNotification } from './api/notification.api'
 
 export const NotificationPlayground = () => {
   // 🔌 real-time wiring
@@ -10,19 +10,15 @@ export const NotificationPlayground = () => {
   const { subscribe, permission, isSupported } = useNotificationPush()
 
   // 📦 store
-  const { notifications, isLoading, markAsRead } = useNotificationStore()
+  const { notifications, isLoading, isMarkAsReadPending, markAsRead } =
+    useNotificationStore()
 
   // 🧪 local test payload
   const [title, setTitle] = useState('Hello')
   const [body, setBody] = useState('This is a test notification')
 
-  const sendTestNotification = async () => {
-    await fetch(`${BASE_URL}/api/notifications`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, body }),
-    })
-  }
+  const { mutate: sendTestNotification, isPending: postSending } =
+    usePostNotification()
 
   return (
     <div style={{ padding: 24, maxWidth: 600 }}>
@@ -63,7 +59,12 @@ export const NotificationPlayground = () => {
         />
         <br />
 
-        <button onClick={sendTestNotification}>Send Notification</button>
+        <button
+          disabled={postSending}
+          onClick={() => sendTestNotification({ title, body })}
+        >
+          Send Notification
+        </button>
       </section>
 
       <hr />
@@ -96,7 +97,12 @@ export const NotificationPlayground = () => {
                 <br />
 
                 {!n.isRead && (
-                  <button onClick={() => markAsRead(n.id)}>Mark as read</button>
+                  <button
+                    disabled={isMarkAsReadPending}
+                    onClick={() => markAsRead(n.id)}
+                  >
+                    Mark as read
+                  </button>
                 )}
               </li>
             ))}

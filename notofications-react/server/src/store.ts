@@ -45,3 +45,7 @@ export const getAllSubscriptions = (): PushSubscriptionDTO[] => {
   const subscriptions = pushSubscriptionSchema.array().parse(response)
   return subscriptions
 }
+
+export const markNotificationAsRead = (id: string) => {
+  db.prepare('UPDATE notifications SET isRead = 1 WHERE id = ?').run(id)
+}

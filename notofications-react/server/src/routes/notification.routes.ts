@@ -3,6 +3,7 @@ import {
   getAllNotifications,
   getAllSubscriptions,
   insertNotification,
+  markNotificationAsRead,
   saveSubscription,
 } from '../store.js'
 import { pushSubscriptionSchema } from '../schema/pushSubscription.schema.js'
@@ -68,5 +69,14 @@ notificationRouter.post('/', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Internal server error' })
     return
+  }
+})
+
+notificationRouter.put('read/:id', (req, res) => {
+  const { id } = req.params
+  try {
+    markNotificationAsRead(id)
+  } catch (e) {
+    res.status(200).json({ message: 'Notification marked as read' })
   }
 })

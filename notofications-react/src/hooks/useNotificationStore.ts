@@ -1,36 +1,16 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import type z from 'zod'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  NotificationStoreSchema,
   type Notifications,
   type NotificationStore,
 } from '../schema/notifications.schema'
 import { useCallback } from 'react'
-import { BASE_URL } from '../config'
-
-export const withSchemaSelectStrict = <S extends z.ZodTypeAny>(schema: S) => {
-  return (data: unknown): z.infer<S> => {
-    const parsed = schema.safeParse(data)
-
-    if (!parsed.success) {
-      console.error('Invalid data:', parsed.error)
-      throw new Error('Invalid data')
-    }
-    return parsed.data
-  }
-}
+import { useGetNotifications, useMarkAsRead } from '../app/api/notification.api'
 
 export const useNotificationStore = () => {
   const queryClient = useQueryClient()
 
-  const query = useQuery<NotificationStore>({
-    queryKey: ['notifications'],
-    queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/notifications`)
-      return response.json()
-    },
-    select: withSchemaSelectStrict(NotificationStoreSchema),
-  })
+  const query = useGetNotifications()
+  const { mutate: markAsRead, isPending: isMarkAsReadPending } = useMarkAsRead()
 
   const upsert = useCallback(
     (notification: Notifications) => {
@@ -50,18 +30,19 @@ export const useNotificationStore = () => {
     [queryClient]
   )
 
-  const markAsRead = (id: string) => {
-    queryClient.setQueryData<NotificationStore>(
-      ['notifications'],
-      (old = []) => {
-        return old.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      }
-    )
-  }
+  // const markAsRead = (id: string) => {
+  //   queryClient.setQueryData<NotificationStore>(
+  //     ['notifications'],
+  //     (old = []) => {
+  //       return old.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+  //     }
+  //   )
+  // }
 
   return {
     notifications: query.data ?? [],
     isLoading: query.isLoading,
+    isMarkAsReadPending: isMarkAsReadPending,
     upsert,
     markAsRead,
   }
