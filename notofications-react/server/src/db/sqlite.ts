@@ -1,6 +1,5 @@
 import Database, { type Database as DatabaseType } from 'better-sqlite3'
-
-export const db: DatabaseType = new Database('/data/app.db')
+export const db: DatabaseType = new Database('./app.db')
 
 // Enable WAL for concurrency
 db.pragma('journal_mode = WAL')
