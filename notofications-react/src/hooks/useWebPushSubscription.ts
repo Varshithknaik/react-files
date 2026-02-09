@@ -70,9 +70,38 @@ export const useNotificationPush = () => {
     )
   }, [isSupported])
 
+  const unsubscribe = useCallback(async () => {
+    if (!isSupported) return
+
+    const registration = await navigator.serviceWorker.ready
+
+    const sub = await registration.pushManager.getSubscription()
+    if (!sub) {
+      setPermission('denied')
+      return
+    }
+
+    await sub.unsubscribe()
+
+    await fetch(
+      `${import.meta.env.VITE_BASE_URL}/api/notifications/unsubscribe`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          endpoint: sub.endpoint,
+        }),
+      }
+    )
+    setPermission('denied')
+  }, [isSupported])
+
   return {
     isSupported,
     permission,
     subscribe,
+    unsubscribe,
   }
 }

@@ -7,7 +7,8 @@ import { usePostNotification } from './api/notification.api'
 export const NotificationPlayground = () => {
   // 🔌 real-time wiring
   useNotificationSSE()
-  const { subscribe, permission, isSupported } = useNotificationPush()
+  const { subscribe, unsubscribe, permission, isSupported } =
+    useNotificationPush()
 
   // 📦 store
   const { notifications, isLoading, isMarkAsReadPending, markAsRead } =
@@ -19,6 +20,14 @@ export const NotificationPlayground = () => {
 
   const { mutate: sendTestNotification, isPending: postSending } =
     usePostNotification()
+
+  const handlePushPermission = () => {
+    if (permission === 'granted') {
+      unsubscribe()
+    } else {
+      subscribe()
+    }
+  }
 
   return (
     <div style={{ padding: 24, maxWidth: 600 }}>
@@ -32,8 +41,8 @@ export const NotificationPlayground = () => {
         {isSupported && (
           <>
             <p>Permission: {permission}</p>
-            <button onClick={subscribe} disabled={permission === 'granted'}>
-              Enable Push
+            <button onClick={() => handlePushPermission()}>
+              {permission === 'granted' ? 'Disable Push' : 'Enable Push'}
             </button>
           </>
         )}

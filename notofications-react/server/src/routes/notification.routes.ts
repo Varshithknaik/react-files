@@ -26,6 +26,7 @@ notificationRouter.get('/sse', (req, res) => {
   })
 })
 
+// TODO: unsubscribe
 notificationRouter.post('/subscribe', (req, res) => {
   const sub = pushSubscriptionSchema.safeParse(req.body)
 
