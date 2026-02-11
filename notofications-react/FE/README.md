@@ -71,3 +71,5 @@ export default defineConfig([
   },
 ])
 ```
+
+<!-- docker build $(grep -vE '^(#|$)' FE/.env.build | sed 's/^/--build-arg /') -t varshithknaik/notification-app:latest . -->
