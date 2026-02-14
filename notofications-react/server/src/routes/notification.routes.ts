@@ -73,7 +73,7 @@ notificationRouter.post('/', async (req, res) => {
   }
 })
 
-notificationRouter.put('/read/:id', (req, res) => {
+notificationRouter.patch('/read/:id', (req, res) => {
   const { id = '' } = req.params
   try {
     markNotificationAsRead(id)
