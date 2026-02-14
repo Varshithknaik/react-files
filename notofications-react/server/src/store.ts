@@ -31,6 +31,10 @@ export const saveSubscription = (sub: PushSubscriptionDTO) => {
   ).run(sub.endpoint, sub.keys.p256dh, sub.keys.auth)
 }
 
+export const unSubscribeNotification = (endpoint: string) => {
+  db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(endpoint)
+}
+
 export const getAllSubscriptions = (): PushSubscriptionDTO[] => {
   const response = db
     .prepare('SELECT * FROM push_subscriptions')

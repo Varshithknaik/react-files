@@ -5,6 +5,7 @@ import {
   insertNotification,
   markNotificationAsRead,
   saveSubscription,
+  unSubscribeNotification,
 } from '../store.js'
 import { pushSubscriptionSchema } from '../schema/pushSubscription.schema.js'
 import {
@@ -13,6 +14,7 @@ import {
 } from '../schema/notification.schema.js'
 import { broadcastSSE } from '../sse.js'
 import { sendPush } from '../push.js'
+import { unsubscribe } from 'diagnostics_channel'
 
 export const notificationRouter = Router()
 
@@ -42,6 +44,20 @@ notificationRouter.post('/subscribe', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
     return
   }
+})
+
+notificationRouter.post('/unsubscribe', async (req, res) => {
+  const endpoint = req.body.endpoint
+
+  if (!endpoint) {
+    res.status(400).json({ error: 'Invalid endpoint' })
+    return
+  }
+
+  try {
+    await unSubscribeNotification(endpoint)
+    res.status(200).json({ message: 'Subscription deleted' })
+  } catch (e) {}
 })
 
 notificationRouter.post('/', async (req, res) => {
