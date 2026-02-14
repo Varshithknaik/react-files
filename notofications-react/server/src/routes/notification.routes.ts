@@ -27,7 +27,7 @@ notificationRouter.get('/sse', (req, res) => {
 })
 
 // TODO: unsubscribe
-notificationRouter.post('/subscribe', (req, res) => {
+notificationRouter.post('/subscribe', async (req, res) => {
   const sub = pushSubscriptionSchema.safeParse(req.body)
 
   if (!sub.success) {
@@ -36,7 +36,7 @@ notificationRouter.post('/subscribe', (req, res) => {
   }
 
   try {
-    saveSubscription(sub.data)
+    await saveSubscription(sub.data)
     res.status(201).json({ message: 'Subscription created' })
   } catch (e) {
     res.status(500).json({ error: 'Internal server error' })

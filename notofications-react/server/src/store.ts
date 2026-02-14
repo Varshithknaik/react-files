@@ -27,7 +27,7 @@ export const insertNotification = (notification: Notification) => {
 
 export const saveSubscription = (sub: PushSubscriptionDTO) => {
   db.prepare(
-    'INSERT INTO push_subscriptions (endpoint, p256dh, auth) VALUES (? , ? , ?))'
+    'INSERT INTO push_subscriptions (endpoint, p256dh, auth) VALUES (? , ? , ?)'
   ).run(sub.endpoint, sub.keys.p256dh, sub.keys.auth)
 }
 

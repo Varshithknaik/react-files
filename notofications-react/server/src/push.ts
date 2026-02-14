@@ -2,7 +2,7 @@ import webPush from 'web-push'
 import type { PushSubscriptionDTO, Notification } from './schema/index.js'
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 webPush.setVapidDetails(
   process.env.VAPID_SUBJECT!,

@@ -12,7 +12,7 @@ self.addEventListener('push', (event) => {
         client.postMessage(notification)
       }
 
-      console.log(notification)
+      console.log(notification, 'notification')
 
       await self.registration.showNotification('message', {
         body: notification.body,

@@ -44,6 +44,7 @@ export const useNotificationPush = () => {
 
   // Sub to push
   const subscribe = useCallback(async () => {
+    console.log('subscribe', isSupported)
     if (!isSupported) return
 
     const perm = await Notification.requestPermission()
