@@ -19,6 +19,7 @@ export const withSchemaSelectStrict = <S extends z.ZodTypeAny>(schema: S) => {
 }
 
 export const useGetNotifications = () => {
+  console.log(BASE_URL)
   return useQuery<NotificationStore>({
     queryKey: ['notifications'],
     queryFn: async () => {
