@@ -1,21 +1,15 @@
-import { Kafka, Partitioners } from 'kafkajs'
-
-export class KafkaManager {
+import { Kafka, Partitioners, Producer, Consumer } from 'kafkajs'
+export class KafkaClient {
   private kafka: Kafka
-
   constructor(clientId: string, brokers: string[]) {
     this.kafka = new Kafka({ clientId, brokers })
   }
-
-  getProducers() {
+  createProducer(): Producer {
     return this.kafka.producer({
       createPartitioner: Partitioners.LegacyPartitioner,
     })
   }
-
-  getConsumers(groupId: string) {
-    return this.kafka.consumer({
-      groupId,
-    })
+  createConsumer(groupId: string): Consumer {
+    return this.kafka.consumer({ groupId })
   }
 }

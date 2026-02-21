@@ -1,16 +1,13 @@
 export enum OrderTopics {
-  ORDER_EVENTS = 'order.lifecycle',
+  ORDER_LIFECYCLE = 'order-lifecycle',
 }
-
-export enum OrderEventTypes {
-  ORDER_CREATED = 'ORDER_CREATED',
+export enum OrderEvents {
+  CREATED = 'ORDER_CREATED',
   STOCK_RESERVED = 'STOCK_RESERVED',
-  PAYMENT_PROCESSED = 'PAYMENT_PROCESSED',
+  PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
 }
-
-export interface DomainEvent<T = any> {
-  eventId: string
-  type: OrderEventTypes
-  payload: T
-  timestamp: number
+export interface OrderCreatedPayload {
+  orderId: string
+  userId: string
+  total: number
 }
