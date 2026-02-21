@@ -12,12 +12,17 @@
     "build": "tsc -b"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "eslint": "^8.0.0",
     "rimraf": "^5.0.0",
     "typescript": "^5.3.0"
   },
   "dependencies": {
     "@types/node": "^25.3.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "http-proxy-middleware": "^3.0.5",
     "kafkajs": "^2.2.4",
     "winston": "^3.19.0"
   }

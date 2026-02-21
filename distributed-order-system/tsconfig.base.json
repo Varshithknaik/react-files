@@ -9,14 +9,15 @@
     "resolveJsonModule": true,
     "declaration": true,
     "outDir": "dist",
+    "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["packages/shared-kernel/src/*"],
+      // "@shared/*": ["packages/shared-kernel/src/*"],
       "@events/*": ["packages/event-contracts/src/*"],
       "@kafka/*": ["packages/kafka-client/src/*"],
-      "@db/*": ["packages/database/src/*"],
-      "@logger/*": ["packages/logger/src/*"],
-      "@config/*": ["packages/config/src/*"]
+      // "@db/*": ["packages/database/src/*"],
+      "@logger/*": ["packages/logger/src/*"]
+      // "@config/*": ["packages/config/src/*"]
     }
   }
 }
