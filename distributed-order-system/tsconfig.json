@@ -1,12 +1,9 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/shared-kernel" },
     { "path": "./packages/event-contracts" },
     { "path": "./packages/kafka-client" },
-    { "path": "./packages/database" },
     { "path": "./packages/logger" },
-    { "path": "./packages/config" },
 
     { "path": "./apps/order-service" },
     { "path": "./apps/inventory-service" },
