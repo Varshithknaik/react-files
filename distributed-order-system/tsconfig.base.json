@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["packages/shared-kernel/src/*"],
+      "@events/*": ["packages/event-contracts/src/*"],
+      "@kafka/*": ["packages/kafka-client/src/*"],
+      "@db/*": ["packages/database/src/*"],
+      "@logger/*": ["packages/logger/src/*"],
+      "@config/*": ["packages/config/src/*"]
+    }
+  }
+}
