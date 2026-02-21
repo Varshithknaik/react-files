@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "docker-compose -f infrastructure/docker/docker-compose.yml up -d",
+    "dev": "docker-compose -f infrastructure/docker/docker-compose.yml up --build",
     "clean": "rimraf node_modules apps/**/dist packages/**/dist",
     "lint": "eslint . --ext .ts",
     "build": "tsc -b"

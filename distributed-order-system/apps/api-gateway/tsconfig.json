@@ -2,5 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "outDir": "./dist", "rootDir": "./src" },
   "include": ["src/**/*"],
-  "references": [{ "path": "../../packages/logger" }]
+  "references": [
+    { "path": "../../packages/event-contracts" },
+    { "path": "../../packages/kafka-client" },
+    { "path": "../../packages/logger" }
+  ]
 }
