@@ -13,10 +13,10 @@
     "baseUrl": ".",
     "paths": {
       // "@shared/*": ["packages/shared-kernel/src/*"],
-      "@events/*": ["packages/event-contracts/src/*"],
-      "@kafka/*": ["packages/kafka-client/src/*"],
+      "@core/events": ["packages/event-contracts/src/index.ts"],
+      "@core/kafka": ["packages/kafka-client/src/index.ts"],
       // "@db/*": ["packages/database/src/*"],
-      "@logger/*": ["packages/logger/src/*"]
+      "@core/logger": ["packages/logger/src/index.ts"]
       // "@config/*": ["packages/config/src/*"]
     }
   }

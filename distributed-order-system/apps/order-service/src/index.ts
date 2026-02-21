@@ -1,9 +1,10 @@
 import express from 'express'
 import pkg from 'pg'
 import dotenv from 'dotenv'
-import { KafkaClient } from '@kafka/index'
+import { KafkaClient } from '@core/kafka'
 import { v4 as uuid } from 'uuid'
-import { OrderTopics } from '@events/index'
+import { OrderTopics } from '@core/events'
+import { logger } from '@core/logger'
 
 dotenv.config({ quiet: true })
 
@@ -14,14 +15,14 @@ const pool = new pkg.Pool({
   connectionString: process.env.ORDER_DB_URL,
 })
 
-const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKER!])
+const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
 const producer = kafka.createProducer()
 
 app.post('/orders', async (req, res) => {
   const { userId, total } = req.body
   const orderId = uuid()
   const client = await pool.connect()
-
+  logger.info('Creating order')
   try {
     await client.query('BEGIN')
 
@@ -45,6 +46,8 @@ app.post('/orders', async (req, res) => {
         },
       ],
     })
+    logger.info('Order created', orderId)
+    res.status(201).send({ orderId })
   } catch (e) {
     await client.query('ROLLBACK')
     res.status(500).send(e)

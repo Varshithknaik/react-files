@@ -1,9 +1,9 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
-import { KafkaClient } from '@kafka/index'
-import { OrderTopics, OrderEvents } from '@events/index'
-import { logger } from '@logger/index'
+import { KafkaClient } from '@core/kafka'
+import { OrderTopics, OrderEvents } from '@core/events'
+import { logger } from '@core/logger'
 
 dotenv.config({ quiet: true })
 
@@ -18,7 +18,7 @@ const OrderView = mongoose.model(
   })
 )
 
-const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKER!])
+const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
 const consumer = kafka.createConsumer('read-model-group')
 
 app.get('/orders/:id', async (req, res) => {

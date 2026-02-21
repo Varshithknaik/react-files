@@ -3,6 +3,7 @@ version: '3.8'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOOKEEPER_TICK_TIME=2000
@@ -23,31 +24,57 @@ services:
 
   postgres-db:
     image: postgres:15-alpine
+    container_name: postgres-db
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
   mongo-read:
     image: mongo:7
+    container_name: mongo-read
     ports:
       - '27017:27017'
+  # ==============================
+  # BASE IMAGE (BUILT ONCE)
+  # ==============================
+  base-image:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile
+    image: distributed-system-base:latest
+    container_name: base-image
 
   api-gateway:
-    build: { context: ../../, dockerfile: infrastructure/docker/Dockerfile }
+    image: distributed-system-base:latest
+    container_name: api-gateway
+    depends_on:
+      - base-image
     ports:
       - '${GATEWAY_PORT}:4000'
-    command: npx tsx apps/api-gateway/src/index.ts
+    environment:
+      ORDER_SERVICE_URL: http://order-service:3001
+    command: npx tsx --tsconfig tsconfig.base.json apps/api-gateway/src/index.ts
 
   order-service:
-    build: { context: ../../, dockerfile: infrastructure/docker/Dockerfile }
-    depends_on: [kafka, postgres-db]
+    image: distributed-system-base:latest
+    depends_on:
+      - api-gateway
+      - kafka
+      - postgres-db
     environment:
       - KAFKA_BROKERS=${KAFKA_BROKERS}
-      - DATABASE_URL=${ORDER_DB_URL}
-    command: npx tsx apps/order-service/src/index.ts
+      - ORDER_DB_URL=${ORDER_DB_URL}
+    command: npx tsx --tsconfig tsconfig.base.json apps/order-service/src/index.ts
 
   # inventory-service:
   #   build: { context: ../../, dockerfile: infrastructure/docker/Dockerfile }
@@ -66,16 +93,20 @@ services:
   #   command: npx tsx apps/payment-service/src/index.ts
 
   read-service:
-    build: { context: ../../, dockerfile: infrastructure/docker/Dockerfile }
-    depends_on: [kafka, mongo-read]
+    image: distributed-system-base:latest
+    depends_on:
+      - api-gateway
+      - kafka
+      - mongo-read
     environment:
       - KAFKA_BROKERS=${KAFKA_BROKERS}
       - MONGO_URI=${MONGO_URI}
-    command: npx tsx apps/read-service/src/index.ts
+    command: npx tsx --tsconfig tsconfig.base.json apps/read-service/src/index.ts
+
   web-client:
-    build:
-      context: ../../
-      dockerfile: infrastructure/docker/Dockerfile
+    image: distributed-system-base:latest
+    depends_on:
+      - api-gateway
     ports:
       - '5173:5173'
     environment:
