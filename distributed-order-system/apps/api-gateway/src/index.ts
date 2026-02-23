@@ -22,7 +22,7 @@ app.use(
 app.use(
   '/queries',
   createProxyMiddleware({
-    target: 'http://order-service:3004',
+    target: 'http://read-service:3004',
     pathRewrite: {
       '^/queries': '',
     },
