@@ -6,3 +6,5 @@
 **/*.db-shm
 
 **/dist
+**/tsconfig.tsbuildinfo
+**/dockerbuild.sh

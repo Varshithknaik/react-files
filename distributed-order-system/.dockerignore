@@ -7,11 +7,10 @@ node_modules
 # Build outputs
 dist
 build
-.tsbuildinfo
+**/.tsbuildinfo
 
 # Docker infra
 infrastructure/docker
-.dockerignore
 docker-compose.yml
 
 # Environment and Secrets

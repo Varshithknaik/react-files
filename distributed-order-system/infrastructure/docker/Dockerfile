@@ -13,3 +13,8 @@ RUN npm install
 COPY . .
 
 RUN npx tsc -b
+RUN npm run build --workspace=apps/web-client
+
+EXPOSE 4000
+
+CMD ["node", "apps/api-gateway/dist/index.js"]
