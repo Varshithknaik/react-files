@@ -14,7 +14,6 @@ import {
 } from '../schema/notification.schema.js'
 import { broadcastSSE } from '../sse.js'
 import { sendPush } from '../push.js'
-import { unsubscribe } from 'diagnostics_channel'
 
 export const notificationRouter = Router()
 
@@ -28,7 +27,6 @@ notificationRouter.get('/sse', (req, res) => {
   })
 })
 
-// TODO: unsubscribe
 notificationRouter.post('/subscribe', async (req, res) => {
   const sub = pushSubscriptionSchema.safeParse(req.body)
 
