@@ -8,16 +8,21 @@ self.addEventListener('push', (event) => {
         includeUncontrolled: true,
       })
 
+      let showNotification = false
+
       for (const client of clientList) {
         client.postMessage(notification)
+        if (client.visibilityState === 'visible') {
+          showNotification = true
+        }
       }
 
-      console.log(notification, 'notification')
-
-      await self.registration.showNotification('message', {
-        body: notification.body,
-        data: notification,
-      })
+      if (!showNotification) {
+        await self.registration.showNotification('message', {
+          body: notification.body,
+          data: notification,
+        })
+      }
     })()
   )
 })

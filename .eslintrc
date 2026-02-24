@@ -3,6 +3,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "prettier",
-    "plugin:prettier/recommended"
-  ]
+    "plugin:prettier/recommended",
+  ],
 }
+
+//chrome://inspect/#service-workers

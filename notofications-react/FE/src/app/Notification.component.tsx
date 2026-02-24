@@ -29,8 +29,6 @@ export const NotificationPlayground = () => {
     }
   }
 
-  console.log('notifications', notifications, permission)
-
   return (
     <div style={{ padding: 24, maxWidth: 600 }}>
       <h2>🔔 Notification Playground</h2>
