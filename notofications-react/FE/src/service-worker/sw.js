@@ -1,4 +1,13 @@
+import { precacheAndRoute } from 'workbox-precaching'
+import { clientsClaim } from 'workbox-core'
+
+self.skipWaiting()
+clientsClaim()
+
+precacheAndRoute(self.__WB_MANIFEST)
+
 self.addEventListener('push', (event) => {
+  if (!event.data) return
   const notification = event.data.json()
 
   event.waitUntil(
@@ -8,16 +17,16 @@ self.addEventListener('push', (event) => {
         includeUncontrolled: true,
       })
 
-      let showNotification = false
+      let hasVisibleClient = false
 
       for (const client of clientList) {
         client.postMessage(notification)
         if (client.visibilityState === 'visible') {
-          showNotification = true
+          hasVisibleClient = true
         }
       }
 
-      if (!showNotification) {
+      if (!hasVisibleClient) {
         await self.registration.showNotification('message', {
           body: notification.body,
           data: notification,

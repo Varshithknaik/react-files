@@ -14,12 +14,6 @@ export const useNotificationPush = () => {
     'PushManager' in window &&
     'Notification' in window
 
-  useEffect(() => {
-    if (!isSupported) return
-
-    navigator.serviceWorker.register('/sw.js')
-  }, [isSupported])
-
   // Listen to SW -> React messages
   useEffect(() => {
     if (!navigator.serviceWorker) return
