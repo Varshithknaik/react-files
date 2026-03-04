@@ -8,6 +8,7 @@ export const useNotificationPush = () => {
   const [permission, setPermission] = useState<NotificationPermission>(
     Notification.permission
   )
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(false)
 
   const isSupported =
     'serviceWorker' in navigator &&
@@ -40,62 +41,89 @@ export const useNotificationPush = () => {
   const subscribe = useCallback(async () => {
     if (!isSupported) return
 
-    const perm = await Notification.requestPermission()
-    setPermission(perm)
+    try {
+      const perm = await Notification.requestPermission()
+      setPermission(perm)
 
-    if (perm !== 'granted') return
+      if (perm !== 'granted') return
 
-    const registration = await navigator.serviceWorker.ready
+      const registration = await navigator.serviceWorker.ready
 
-    const sub = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
-    })
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
+      })
 
-    await fetch(
-      `${import.meta.env.VITE_BASE_URL}/api/notifications/subscribe`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(sub),
-      }
-    )
+      await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/notifications/subscribe`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(sub),
+        }
+      )
+      setIsSubscribed(true)
+    } catch (error) {
+      setIsSubscribed(false)
+      console.log(error)
+    }
   }, [isSupported])
 
   const unsubscribe = useCallback(async () => {
     if (!isSupported) return
 
-    const registration = await navigator.serviceWorker.ready
+    try {
+      const registration = await navigator.serviceWorker.ready
 
-    const sub = await registration.pushManager.getSubscription()
-    if (!sub) {
-      setPermission('denied')
-      return
-    }
-
-    await sub.unsubscribe()
-
-    await fetch(
-      `${import.meta.env.VITE_BASE_URL}/api/notifications/unsubscribe`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-        }),
+      const sub = await registration.pushManager.getSubscription()
+      if (!sub) {
+        setPermission('denied')
+        return
       }
-    )
-    setPermission('denied')
+
+      await sub.unsubscribe()
+
+      await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/notifications/unsubscribe`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            endpoint: sub.endpoint,
+          }),
+        }
+      )
+      setPermission('denied')
+      setIsSubscribed(false)
+    } catch (error) {
+      console.log(error)
+    }
   }, [isSupported])
+
+  useEffect(() => {
+    const init = () => {
+      subscribe()
+    }
+    init()
+  }, [subscribe])
+
+  const toggleSubscription = useCallback(() => {
+    if (isSubscribed) {
+      unsubscribe()
+    } else {
+      subscribe()
+    }
+  }, [isSubscribed, subscribe, unsubscribe])
 
   return {
     isSupported,
     permission,
     subscribe,
     unsubscribe,
+    toggleSubscription,
   }
 }

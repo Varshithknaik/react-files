@@ -1,6 +1,6 @@
 
 IMAGE="varshithknaik/notification-app"
-ENV_FILE="./FE/.env"
+ENV_FILE="./FE/.env.production"
 VERSION="v1.0.4"
 
 BUILD_ARGS=$(grep -vE '^(#/$)' $ENV_FILE | sed 's/^/--build-arg /');

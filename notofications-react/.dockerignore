@@ -2,7 +2,6 @@
 **/dist
 .git
 .env*
-.env.build
 **/tsconfig.tsbuildinfo
 **/dockerbuild.sh
 **/dev-dist

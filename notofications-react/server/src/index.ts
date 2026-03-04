@@ -23,6 +23,12 @@ app.use(express.json())
 app.use('/api/notifications', notificationRouter)
 
 const fePath = path.join(__dirname, '../frontend-dist')
+
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache')
+  res.sendFile(path.join(fePath, 'sw.js'))
+})
+
 app.use(express.static(fePath))
 
 app.use((_, res) => {

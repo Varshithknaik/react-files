@@ -6,10 +6,17 @@ clientsClaim()
 
 precacheAndRoute(self.__WB_MANIFEST)
 
+self.addEventListener('install', (event) => {
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim())
+})
+
 self.addEventListener('push', (event) => {
   if (!event.data) return
   const notification = event.data.json()
-  console.log(notification, event.data)
 
   event.waitUntil(
     (async () => {

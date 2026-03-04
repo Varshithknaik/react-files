@@ -10,7 +10,7 @@ export const sseClients = new Set<import('express').Response>()
 
 export const getAllNotifications = (): Notification[] => {
   const response = db
-    .prepare('SELECT * FROM notifications ORDER BY createdAt DESC')
+    .prepare('SELECT * FROM notifications ORDER BY createdAt ASC')
     .all()
   const notifications = NotificationSchema.array().parse(response)
   return notifications
