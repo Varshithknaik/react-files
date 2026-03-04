@@ -1,0 +1,3 @@
+[submodule "dockers/fe-app"]
+	path = dockers/fe-app
+	url = https://github.com/Varshithknaik/docker-fe-sg.git
