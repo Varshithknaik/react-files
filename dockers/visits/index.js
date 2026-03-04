@@ -1,18 +1,30 @@
 const express = require('express')
 const redis = require('redis')
+const process = require('process')
 
 const app = express()
-const client = redis.createClient()
 
-client.set('visits', 0)
+const client = redis.createClient({
+  url: 'redis://redis-server:6379',
+})
 
-app.get('/', (req, res) => {
-  client.get('visits', (err, visits) => {
+client.on('error', (err) => console.log('Redis Client Error', err))
+
+async function start() {
+  await client.connect()
+
+  await client.set('visits', 0)
+
+  app.get('/', async (req, res) => {
+    process.exit(0)
+    const visits = await client.get('visits')
     res.send('Number of visits is ' + visits)
-    client.set('visits', parseInt(visits) + 1)
+    await client.set('visits', parseInt(visits) + 1)
   })
-})
 
-app.listen(8081, () => {
-  console.log('Listening on port 8081')
-})
+  app.listen(8081, () => {
+    console.log('Listening on port 8081')
+  })
+}
+
+start()

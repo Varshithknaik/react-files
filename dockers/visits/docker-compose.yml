@@ -1,0 +1,9 @@
+services:
+  redis-server:
+    image: 'redis:latest'
+  node-app:
+    build: .
+    ports:
+      - '4001:8081'
+    depends_on:
+      - redis-server
