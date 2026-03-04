@@ -8,3 +8,4 @@
 **/dist
 **/tsconfig.tsbuildinfo
 **/dockerbuild.sh
+**/dev-dist

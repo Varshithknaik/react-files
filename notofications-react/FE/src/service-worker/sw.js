@@ -9,6 +9,7 @@ precacheAndRoute(self.__WB_MANIFEST)
 self.addEventListener('push', (event) => {
   if (!event.data) return
   const notification = event.data.json()
+  console.log(notification, event.data)
 
   event.waitUntil(
     (async () => {
