@@ -15,10 +15,6 @@ app.use(cors())
 const fePath = path.join(__dirname, '../../web-client/dist')
 app.use(express.static(fePath))
 
-app.use((_, res) => {
-  res.sendFile(path.join(fePath, 'index.html'))
-})
-
 app.use(
   '/commands',
   createProxyMiddleware({
@@ -28,7 +24,7 @@ app.use(
 )
 
 app.use(
-  '/queries',
+  '/queries/',
   createProxyMiddleware({
     target: 'http://localhost:3004',
     pathRewrite: { '^/queries': '' },
@@ -41,6 +37,10 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     Kafka: process.env.KAFKA_BROKERS,
   })
+})
+
+app.use((_, res) => {
+  res.sendFile(path.join(fePath, 'index.html'))
 })
 
 app.listen(PORT, () => {

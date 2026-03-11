@@ -11,14 +11,32 @@ dotenv.config({ quiet: true })
 const app = express()
 app.use(express.json())
 
+export async function initDB() {
+  await pool.query(`
+    CREATE SCHEMA IF NOT EXISTS order_service;
+  `)
+}
+
 const pool = new pkg.Pool({
   connectionString: process.env.ORDER_DB_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 })
 
 const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
 const producer = kafka.createProducer()
 
+app.get('/health', (req, res) => {
+  res.send({
+    message: 'OK',
+    timestamp: new Date().toISOString(),
+    Kafka: process.env.KAFKA_BROKERS,
+  })
+})
+
 app.post('/orders', async (req, res) => {
+  logger.info('Creating order')
   const { userId, total } = req.body
   const orderId = uuid()
   const client = await pool.connect()
@@ -56,4 +74,7 @@ app.post('/orders', async (req, res) => {
   }
 })
 
-app.listen(3001)
+app.listen(3001, async () => {
+  await initDB()
+  logger.info(`API Gateway listening on port 3001`)
+})
