@@ -5,6 +5,7 @@
     "apps/*",
     "packages/*"
   ],
+  "type": "module",
   "scripts": {
     "dev": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up --build",
     "dev:infra": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up kafka zookeeper mongo-read kafka-ui pgadmin mongo-express",
@@ -14,7 +15,7 @@
     "build": "tsc -b",
     "clean": "find . -name 'dist' -type d -exec rm -rf {} +",
     "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\"",
-    "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --proto_path=packages/proto-pack/proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=esModuleInterop=true,outputService=grpc-js,env=node packages/proto-pack/proto/*.proto"
+    "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,env=node --proto_path=packages/proto-pack/proto packages/proto-pack/proto/*.proto"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -23,14 +24,15 @@
     "@types/pg": "^8.16.0",
     "dotenv-cli": "^11.0.0",
     "eslint": "^8.0.0",
-    "protoc": "^34.0.0",
+    "protoc": "^33.5.0",
     "protoc-gen-ts": "^0.8.7",
     "rimraf": "^5.0.0",
-    "ts-proto": "^2.11.6",
+    "ts-proto": "^2.11.4",
     "typescript": "^5.3.0"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
+    "@grpc/proto-loader": "^0.8.0",
     "@prisma/client": "^7.5.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
@@ -41,6 +43,7 @@
     "mongoose": "^9.2.1",
     "pg": "^8.18.0",
     "prisma": "^7.5.0",
+    "proto-loader-gen-types": "^1.0.0",
     "uuid": "^13.0.0",
     "winston": "^3.19.0"
   }

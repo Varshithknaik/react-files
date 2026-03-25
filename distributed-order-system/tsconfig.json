@@ -4,6 +4,7 @@
     { "path": "./packages/event-contracts" },
     { "path": "./packages/kafka-client" },
     { "path": "./packages/logger" },
+    { "path": "./packages/proto-pack" },
 
     { "path": "./apps/order-service" },
     // { "path": "./apps/inventory-service" },
