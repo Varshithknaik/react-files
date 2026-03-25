@@ -13,7 +13,8 @@
     "dev:local": "concurrently \"npm run gateway:local\" \"npm run order:local\"",
     "build": "tsc -b",
     "clean": "find . -name 'dist' -type d -exec rm -rf {} +",
-    "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\""
+    "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\"",
+    "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --proto_path=packages/proto-pack/proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=esModuleInterop=true,outputService=grpc-js,env=node packages/proto-pack/proto/*.proto"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -22,7 +23,10 @@
     "@types/pg": "^8.16.0",
     "dotenv-cli": "^11.0.0",
     "eslint": "^8.0.0",
+    "protoc": "^34.0.0",
+    "protoc-gen-ts": "^0.8.7",
     "rimraf": "^5.0.0",
+    "ts-proto": "^2.11.6",
     "typescript": "^5.3.0"
   },
   "dependencies": {
