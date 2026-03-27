@@ -4,19 +4,17 @@ import { logger } from '@core/logger'
 import grpc from "@grpc/grpc-js"
 import { OrderServiceService, OrderServiceServer } from '@core/proto'
 import { orderSerice } from './handle.js'
+import { start } from 'node:repl'
 
 dotenv.config({ quiet: true })
 
 
 const server = new grpc.Server()
 
-
 const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
 const producer = kafka.createProducer()
 
-
 server.addService(OrderServiceService, orderSerice);
-
 
 export const startOrderGrpc = () => {
   server.bindAsync(
@@ -31,3 +29,5 @@ export const startOrderGrpc = () => {
     }
   )
 }
+
+startOrderGrpc()
