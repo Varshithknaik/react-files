@@ -1,8 +1,17 @@
-import { OrderServiceServer } from "@core/proto";
+import { OrderServiceServer, CreateOrderRequest, CreateOrderResponse } from "@core/proto";
+import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
 
-export const orderSerice: OrderServiceServer = {
- getOrder: (call, callback) => {
-    const { id } = call.request;
-    callback(null, { order: `Order ${id}` });
-  },
+export const orderService: OrderServiceServer = {
+  createOrder: (
+    call: ServerUnaryCall<CreateOrderRequest, CreateOrderResponse>,
+    callback: sendUnaryData<CreateOrderResponse>
+  ) => {
+    const { userId } = call.request;
+    console.log(userId)
+    callback(null , {
+      orderId: '1',
+      status: '1',
+      total: 1
+    })
+  }
 }

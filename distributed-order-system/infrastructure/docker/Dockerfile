@@ -2,7 +2,10 @@ FROM node:22-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache protobuf
+
 COPY package*.json ./
+COPY packages/proto-pack/package.json ./packages/proto-pack/
 COPY packages/event-contracts/package.json ./packages/event-contracts/
 COPY packages/kafka-client/package.json ./packages/kafka-client/
 COPY packages/logger/package.json ./packages/logger/
@@ -12,9 +15,11 @@ RUN npm install
 
 COPY . .
 
+RUN npm run proto:gen
+RUN npx tsc -b packages/proto-pack
 RUN npx tsc -b
 RUN npm run build --workspace=apps/web-client
 
 EXPOSE 4000
 
-CMD ["node", "apps/api-gateway/dist/index.js"]
+CMD ["npm", "run", "start:prod"]

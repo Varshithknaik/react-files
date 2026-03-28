@@ -21,30 +21,41 @@ import {
 
 export const protobufPackage = "order";
 
-export interface GetOrderRequest {
-  id: string;
+export interface CreateOrderRequest {
+  userId: string;
+  items: OrderItemInput[];
 }
 
-export interface GetOrderResponse {
-  order: string;
+export interface OrderItemInput {
+  productId: string;
+  quantity: number;
 }
 
-function createBaseGetOrderRequest(): GetOrderRequest {
-  return { id: "" };
+export interface CreateOrderResponse {
+  orderId: string;
+  status: string;
+  total: number;
 }
 
-export const GetOrderRequest: MessageFns<GetOrderRequest> = {
-  encode(message: GetOrderRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
+function createBaseCreateOrderRequest(): CreateOrderRequest {
+  return { userId: "", items: [] };
+}
+
+export const CreateOrderRequest: MessageFns<CreateOrderRequest> = {
+  encode(message: CreateOrderRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    for (const v of message.items) {
+      OrderItemInput.encode(v!, writer.uint32(18).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): GetOrderRequest {
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateOrderRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGetOrderRequest();
+    const message = createBaseCreateOrderRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -53,7 +64,15 @@ export const GetOrderRequest: MessageFns<GetOrderRequest> = {
             break;
           }
 
-          message.id = reader.string();
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.items.push(OrderItemInput.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -65,44 +84,54 @@ export const GetOrderRequest: MessageFns<GetOrderRequest> = {
     return message;
   },
 
-  fromJSON(object: any): GetOrderRequest {
-    return { id: isSet(object.id) ? globalThis.String(object.id) : "" };
+  fromJSON(object: any): CreateOrderRequest {
+    return {
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => OrderItemInput.fromJSON(e)) : [],
+    };
   },
 
-  toJSON(message: GetOrderRequest): unknown {
+  toJSON(message: CreateOrderRequest): unknown {
     const obj: any = {};
-    if (message.id !== "") {
-      obj.id = message.id;
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => OrderItemInput.toJSON(e));
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<GetOrderRequest>, I>>(base?: I): GetOrderRequest {
-    return GetOrderRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<CreateOrderRequest>, I>>(base?: I): CreateOrderRequest {
+    return CreateOrderRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<GetOrderRequest>, I>>(object: I): GetOrderRequest {
-    const message = createBaseGetOrderRequest();
-    message.id = object.id ?? "";
+  fromPartial<I extends Exact<DeepPartial<CreateOrderRequest>, I>>(object: I): CreateOrderRequest {
+    const message = createBaseCreateOrderRequest();
+    message.userId = object.userId ?? "";
+    message.items = object.items?.map((e) => OrderItemInput.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseGetOrderResponse(): GetOrderResponse {
-  return { order: "" };
+function createBaseOrderItemInput(): OrderItemInput {
+  return { productId: "", quantity: 0 };
 }
 
-export const GetOrderResponse: MessageFns<GetOrderResponse> = {
-  encode(message: GetOrderResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.order !== "") {
-      writer.uint32(10).string(message.order);
+export const OrderItemInput: MessageFns<OrderItemInput> = {
+  encode(message: OrderItemInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.productId !== "") {
+      writer.uint32(10).string(message.productId);
+    }
+    if (message.quantity !== 0) {
+      writer.uint32(16).int32(message.quantity);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): GetOrderResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): OrderItemInput {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGetOrderResponse();
+    const message = createBaseOrderItemInput();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -111,7 +140,15 @@ export const GetOrderResponse: MessageFns<GetOrderResponse> = {
             break;
           }
 
-          message.order = reader.string();
+          message.productId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.quantity = reader.int32();
           continue;
         }
       }
@@ -123,60 +160,159 @@ export const GetOrderResponse: MessageFns<GetOrderResponse> = {
     return message;
   },
 
-  fromJSON(object: any): GetOrderResponse {
-    return { order: isSet(object.order) ? globalThis.String(object.order) : "" };
+  fromJSON(object: any): OrderItemInput {
+    return {
+      productId: isSet(object.productId) ? globalThis.String(object.productId) : "",
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+    };
   },
 
-  toJSON(message: GetOrderResponse): unknown {
+  toJSON(message: OrderItemInput): unknown {
     const obj: any = {};
-    if (message.order !== "") {
-      obj.order = message.order;
+    if (message.productId !== "") {
+      obj.productId = message.productId;
+    }
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<GetOrderResponse>, I>>(base?: I): GetOrderResponse {
-    return GetOrderResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<OrderItemInput>, I>>(base?: I): OrderItemInput {
+    return OrderItemInput.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<GetOrderResponse>, I>>(object: I): GetOrderResponse {
-    const message = createBaseGetOrderResponse();
-    message.order = object.order ?? "";
+  fromPartial<I extends Exact<DeepPartial<OrderItemInput>, I>>(object: I): OrderItemInput {
+    const message = createBaseOrderItemInput();
+    message.productId = object.productId ?? "";
+    message.quantity = object.quantity ?? 0;
+    return message;
+  },
+};
+
+function createBaseCreateOrderResponse(): CreateOrderResponse {
+  return { orderId: "", status: "", total: 0 };
+}
+
+export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
+  encode(message: CreateOrderResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    if (message.status !== "") {
+      writer.uint32(18).string(message.status);
+    }
+    if (message.total !== 0) {
+      writer.uint32(25).double(message.total);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateOrderResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateOrderResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.total = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CreateOrderResponse {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      total: isSet(object.total) ? globalThis.Number(object.total) : 0,
+    };
+  },
+
+  toJSON(message: CreateOrderResponse): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.total !== 0) {
+      obj.total = message.total;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CreateOrderResponse>, I>>(base?: I): CreateOrderResponse {
+    return CreateOrderResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CreateOrderResponse>, I>>(object: I): CreateOrderResponse {
+    const message = createBaseCreateOrderResponse();
+    message.orderId = object.orderId ?? "";
+    message.status = object.status ?? "";
+    message.total = object.total ?? 0;
     return message;
   },
 };
 
 export type OrderServiceService = typeof OrderServiceService;
 export const OrderServiceService = {
-  getOrder: {
-    path: "/order.OrderService/GetOrder",
+  createOrder: {
+    path: "/order.OrderService/CreateOrder",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: GetOrderRequest): Buffer => Buffer.from(GetOrderRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): GetOrderRequest => GetOrderRequest.decode(value),
-    responseSerialize: (value: GetOrderResponse): Buffer => Buffer.from(GetOrderResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): GetOrderResponse => GetOrderResponse.decode(value),
+    requestSerialize: (value: CreateOrderRequest): Buffer => Buffer.from(CreateOrderRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CreateOrderRequest => CreateOrderRequest.decode(value),
+    responseSerialize: (value: CreateOrderResponse): Buffer => Buffer.from(CreateOrderResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CreateOrderResponse => CreateOrderResponse.decode(value),
   },
 } as const;
 
 export interface OrderServiceServer extends UntypedServiceImplementation {
-  getOrder: handleUnaryCall<GetOrderRequest, GetOrderResponse>;
+  createOrder: handleUnaryCall<CreateOrderRequest, CreateOrderResponse>;
 }
 
 export interface OrderServiceClient extends Client {
-  getOrder(
-    request: GetOrderRequest,
-    callback: (error: ServiceError | null, response: GetOrderResponse) => void,
+  createOrder(
+    request: CreateOrderRequest,
+    callback: (error: ServiceError | null, response: CreateOrderResponse) => void,
   ): ClientUnaryCall;
-  getOrder(
-    request: GetOrderRequest,
+  createOrder(
+    request: CreateOrderRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: GetOrderResponse) => void,
+    callback: (error: ServiceError | null, response: CreateOrderResponse) => void,
   ): ClientUnaryCall;
-  getOrder(
-    request: GetOrderRequest,
+  createOrder(
+    request: CreateOrderRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: GetOrderResponse) => void,
+    callback: (error: ServiceError | null, response: CreateOrderResponse) => void,
   ): ClientUnaryCall;
 }
 

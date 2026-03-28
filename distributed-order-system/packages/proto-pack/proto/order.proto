@@ -3,13 +3,22 @@ syntax = "proto3";
 package order;
 
 service OrderService{
-  rpc GetOrder (GetOrderRequest) returns (GetOrderResponse);
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+
 }
 
-message GetOrderRequest{
-  string id=1;
+message CreateOrderRequest{
+  string userId=1;
+  repeated OrderItemInput items = 2;
 }
 
-message GetOrderResponse{
-  string order=1;
+message OrderItemInput{
+  string productId = 1;
+  int32 quantity = 2;
+}
+
+message CreateOrderResponse{
+  string orderId = 1;
+  string status = 2;
+  double total = 3;
 }

@@ -18,7 +18,7 @@
       // "@db/*": ["packages/database/src/*"],
       "@core/logger": ["packages/logger/src/index.ts"],
       // "@config/*": ["packages/config/src/*"]
-      "@core/proto": ["packages/proto-pack/src/index.ts"]
+"@core/proto": ["packages/proto-pack/dist/index"]
     }
   }
 }

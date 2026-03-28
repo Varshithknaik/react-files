@@ -6,16 +6,21 @@
     "packages/*"
   ],
   "type": "module",
+    "include": [
+    "types/**/*.d.ts"
+  ],
   "scripts": {
     "dev": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up --build",
-    "dev:infra": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up kafka zookeeper mongo-read kafka-ui pgadmin mongo-express",
+    "dev:infra": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up kafka-ui pgadmin mongo-express",
     "order:local": "dotenv -e .env.local -- npx tsx watch apps/order-service/src/index.ts",
     "gateway:local": "dotenv -e .env.local -- npx tsx apps/api-gateway/src/index.ts",
     "dev:local": "concurrently \"npm run gateway:local\" \"npm run order:local\"",
     "build": "tsc -b",
     "clean": "find . -name 'dist' -type d -exec rm -rf {} +",
     "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\"",
-    "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,env=node --proto_path=packages/proto-pack/proto packages/proto-pack/proto/*.proto"
+    "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,env=node --proto_path=packages/proto-pack/proto packages/proto-pack/proto/*.proto",
+    "start:prod": "concurrently \"node apps/order-service/dist/index.js\" \"node apps/api-gateway/dist/index.js\"",
+    "build:proto": "npm run proto:gen && tsc -b packages/proto-pack"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

@@ -7,7 +7,9 @@ import { orderRouter } from './routes/commands/order.routes.js'
 
 dotenv.config({ quiet: true })
 
-const PORT = process.env.PORT || 4000
+const PORT = process.env.GATEWAY_PORT || 4000
+
+console.log("KAFKA_CA:", process.env.KAFKA_CA , process.env.GATEWAY_PORT);
 
 const app = express()
 app.use(cors())
