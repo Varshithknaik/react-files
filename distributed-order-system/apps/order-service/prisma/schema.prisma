@@ -10,10 +10,41 @@ datasource db {
   provider = "postgresql"
 }
 
-model ProductCache {
-  sku String @id
-  name String
-  price Float
-  updatedAt DateTime @default(now())
+model Users {
+  id String @id
+  email String
+  name String?
+  order Order[]
 }
 
+model Order{
+  id String @id @default(cuid())
+  userId String 
+  user Users @relation(fields: [userId], references: [id])
+  total Float
+  status String @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItem OrderItem[]
+}
+
+model Inventory{
+  sku String @id
+  name String
+  category String
+  stock Int @default(0)
+  price Float @default(0)
+
+  orderItem OrderItem[]
+}
+
+model OrderItem{
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  inventoryId String
+  inventory Inventory @relation(fields: [inventoryId], references: [sku])
+  quantity Int
+  price Float
+}

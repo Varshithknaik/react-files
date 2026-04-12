@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "type": "module",
-    "include": [
+  "include": [
     "types/**/*.d.ts"
   ],
   "scripts": {
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.4.0",
     "@types/pg": "^8.16.0",
     "dotenv-cli": "^11.0.0",
@@ -44,6 +45,7 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",
+    "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
     "mongoose": "^9.2.1",
     "pg": "^8.18.0",
