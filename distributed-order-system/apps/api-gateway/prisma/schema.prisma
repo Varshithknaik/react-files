@@ -5,6 +5,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/client-api-gateway"
 }
 
 datasource db {
@@ -15,5 +16,4 @@ model Users {
   id String @id @default(cuid())
   email String @unique
   name String?
-  sa String
 }

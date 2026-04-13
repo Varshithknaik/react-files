@@ -11,9 +11,10 @@ COPY packages/kafka-client/package.json ./packages/kafka-client/
 COPY packages/logger/package.json ./packages/logger/
 COPY apps/web-client/package.json ./apps/web-client/
 
-RUN npm install
+RUN npm ci
 
 COPY . .
+RUN npx prisma generate --schema=apps/api-gateway/prisma/schema.prisma
 
 RUN npm run proto:gen
 RUN npx tsc -b packages/proto-pack

@@ -14,7 +14,7 @@
     "dev:infra": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up kafka-ui pgadmin mongo-express",
     "order:local": "dotenv -e .env.local -- npx tsx watch apps/order-service/src/index.ts",
     "gateway:local": "dotenv -e .env.local -- npx tsx watch apps/api-gateway/src/index.ts",
-    "prisma:gateway": "dotenv -e .env.local -- sh -c 'cd apps/api-gateway && npx prisma migrate dev'",
+    "prisma:gateway": "dotenv -e .env.local -- sh -c 'cd apps/api-gateway && npx prisma generate && npx prisma migrate dev'",
     "build": "tsc -b",
     "dev:local": "npm run prisma:gateway && concurrently \"npm run gateway:local\" \"npm run order:local\"",
     "clean": "find . -name 'dist' -type d -exec rm -rf {} +",

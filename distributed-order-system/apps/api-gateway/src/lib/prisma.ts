@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv'
 import path from 'path'
 import { PrismaPg } from '@prisma/adapter-pg'
 import fs from 'fs'
-import { PrismaClient } from '@prisma/client/extension'
+import { PrismaClient } from '@prisma/client-api-gateway'
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config({

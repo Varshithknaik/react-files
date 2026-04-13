@@ -3,7 +3,6 @@
 import { defineConfig, env } from 'prisma/config'
 import * as dotenv from 'dotenv'
 import path from 'path'
-import fs from 'fs'
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config({
@@ -12,7 +11,6 @@ if (process.env.NODE_ENV !== 'production') {
   })
 }
 
-console.log(process.env['USERS_DB_URL'])
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
