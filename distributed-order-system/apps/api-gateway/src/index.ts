@@ -4,28 +4,20 @@ import { createProxyMiddleware } from 'http-proxy-middleware'
 import { logger } from '@core/logger'
 import dotenv from 'dotenv'
 import { orderRouter } from './routes/commands/order.routes.js'
+import { authRouter } from './routes/auth.routes.js'
 
 dotenv.config({ quiet: true })
 
 const PORT = process.env.GATEWAY_PORT || 4000
 
-console.log("KAFKA_CA:", process.env.KAFKA_CA , process.env.GATEWAY_PORT);
-
 const app = express()
 app.use(cors())
+app.use(express.json())
 
 // const fePath = path.join(__dirname, '../../web-client/dist')
 // app.use(express.static(fePath))
-
+app.use('/user', authRouter)
 app.use('/commands/order', orderRouter)
-
-app.use(
-  '/queries/',
-  createProxyMiddleware({
-    target: 'http://localhost:3004',
-    pathRewrite: { '^/queries': '' },
-  })
-)
 
 app.get('/health', (req, res) => {
   res.send({

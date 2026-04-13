@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export enum OrderTopics {
   ORDER_LIFECYCLE = 'order-lifecycle',
 }
@@ -11,3 +13,18 @@ export interface OrderCreatedPayload {
   userId: string
   total: number
 }
+
+export const eventEnvelopeSchema = <T extends z.ZodTypeAny>(payloadSchema: T) =>
+  z
+    .object({
+      eventId: z.uuid(),
+      eventType: z.string(),
+      occurredAt: z.string(), // ISO 8601
+      version: z.number().int().positive(),
+      payload: payloadSchema,
+    })
+    .strict()
+
+export type EventEnvelope<T extends z.ZodTypeAny> = z.infer<
+  ReturnType<typeof eventEnvelopeSchema<T>>
+>

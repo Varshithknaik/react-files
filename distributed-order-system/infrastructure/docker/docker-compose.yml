@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   mongo-read:
     image: mongo:7
     container_name: mongo-read
@@ -36,7 +35,7 @@ services:
     container_name: kafka-ui
     ports:
       - '8080:8080'
-    volumes: 
+    volumes:
       - ../../cert:/cert
     environment:
       KAFKA_CLUSTERS_0_NAME: aiven
