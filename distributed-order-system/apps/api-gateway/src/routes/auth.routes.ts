@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { Request, Response, NextFunction } from 'express'
 import { createUser } from '../repository/user.repository.js'
+import { publish } from '../events/produce.js'
+import { USER_TOPICS } from '@core/events'
 
 export const authRouter = Router()
 
@@ -16,7 +18,20 @@ authRouter.post(
 
     try {
       const { id } = await createUser(email, name)
-      return res.status(200).json({ id })
+      res.status(200).json({ id })
+
+      publish(USER_TOPICS.USER_CREATED, {
+        eventId: crypto.randomUUID(),
+        eventType: USER_TOPICS.USER_CREATED,
+        occurredAt: new Date().toISOString(),
+        version: 1,
+        payload: {
+          email,
+          name,
+        },
+      })
+
+      return
     } catch (error) {
       return res.status(500).json({ error: 'Internal server error' })
     }

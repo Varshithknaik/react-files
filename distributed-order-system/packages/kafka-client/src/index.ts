@@ -4,8 +4,6 @@ import dotenv from 'dotenv'
 
 dotenv.config({ quiet: true })
 
-console.log("KAFKA_CA:", process.env.KAFKA_CA , process.env.GATEWAY_PORT);
-
 function resolvePath(p: string) {
   // if running in docker -> path exists like mentioned in env file
   if (fs.existsSync(p)) return p
@@ -24,9 +22,9 @@ export class KafkaClient {
       clientId,
       brokers,
       ssl: {
-        ca: fs.readFileSync(caPath),
-        cert: fs.readFileSync(certPath),
-        key: fs.readFileSync(keyPath),
+        ca: fs.readFileSync(caPath, 'utf-8'),
+        cert: fs.readFileSync(certPath, 'utf-8'),
+        key: fs.readFileSync(keyPath, 'utf-8'),
         rejectUnauthorized: true,
       },
     })

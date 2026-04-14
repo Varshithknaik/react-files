@@ -18,12 +18,11 @@ function resolvePath(p: string) {
   return p?.replace('/app', '.')
 }
 
-const caPath = resolvePath(process.env.KAFKA_CA!)
-
+const caPath = resolvePath(process.env.POSTGRES_CA!)
 const connectionString = `${process.env.USERS_DB_URL}`
 const adapter = new PrismaPg({
   connectionString,
-  ssl: { ca: fs.readFileSync(caPath) },
+  ssl: { ca: fs.readFileSync(caPath, 'utf-8'), rejectUnauthorized: false },
 })
 const prisma = new PrismaClient({ adapter })
 export { prisma }
