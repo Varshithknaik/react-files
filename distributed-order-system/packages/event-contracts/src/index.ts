@@ -16,7 +16,7 @@ export interface OrderCreatedPayload {
 }
 
 export const USER_TOPICS = {
-  USER_CREATED: 'user-created',
+  USER_CREATED: 'users.events',
 } as const
 
 export const eventEnvelopeSchema = <T extends z.ZodTypeAny>(payloadSchema: T) =>

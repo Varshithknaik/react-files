@@ -28,6 +28,7 @@ authRouter.post(
         payload: {
           email,
           name,
+          id,
         },
       })
 

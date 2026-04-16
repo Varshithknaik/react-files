@@ -1,5 +1,4 @@
 import dotenv from 'dotenv'
-import { KafkaClient } from '@core/kafka'
 import { logger } from '@core/logger'
 import grpc from '@grpc/grpc-js'
 import { OrderServiceService } from '@core/proto'
@@ -10,8 +9,8 @@ dotenv.config({ quiet: true })
 
 const server = new grpc.Server()
 
-const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
-const producer = kafka.createProducer()
+// const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
+// const producer = kafka.createProducer()
 
 server.addService(OrderServiceService, orderService)
 
@@ -28,6 +27,6 @@ export const startOrderGrpc = () => {
     }
   )
 
-  startOrderConsumer()
+  startOrderConsumer(true)
 }
 startOrderGrpc()
