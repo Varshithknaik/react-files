@@ -17,7 +17,6 @@ COPY . .
 RUN npx prisma generate --schema=apps/api-gateway/prisma/schema.prisma
 
 RUN npm run proto:gen
-RUN npx tsc -b packages/proto-pack
 RUN npx tsc -b
 RUN npm run build --workspace=apps/web-client
 

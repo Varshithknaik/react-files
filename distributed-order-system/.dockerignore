@@ -7,7 +7,7 @@ node_modules
 # Build outputs
 dist
 build
-**/.tsbuildinfo
+**/tsconfig.tsbuildinfo
 
 # Docker infra
 infrastructure/docker

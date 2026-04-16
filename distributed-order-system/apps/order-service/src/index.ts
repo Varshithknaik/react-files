@@ -3,7 +3,7 @@ import { logger } from '@core/logger'
 import grpc from '@grpc/grpc-js'
 import { OrderServiceService } from '@core/proto'
 import { orderService } from './handle.js'
-import { startOrderConsumer } from './consumner.js'
+import { startOrderConsumer } from './events/consumner.js'
 
 dotenv.config({ quiet: true })
 
