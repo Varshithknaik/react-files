@@ -1,37 +1,17 @@
-// import { Kafka } from 'kafkajs'
-// import { EventEnvelope } from '@core/events'
-// import dotenv from 'dotenv'
-// import { KafkaClient } from '@core/kafka'
-
-// dotenv.config({ quiet: true })
-
-// const kafka = new KafkaClient('read-service-users', [
-//   process.env.KAFKA_BROKERS!,
-// ])
-// const consumer = kafka.createConsumer('read-service-users')
-
-// export async function startOrderConsumer() {
-//   await consumer.connect()
-//   await consumer.subscribe({ topic: 'users.events', fromBeginning: true })
-
-//   await consumer.run({
-//     eachMessage: async ({ message }) => {
-//       const envelope: EventEnvelope<any> = JSON.parse(message.value!.toString())
-
-//       console.log(envelope, 'envelope')
-//     },
-//   })
-// }
 import { EventEnvelope } from '@core/events'
 import dotenv from 'dotenv'
 import { KafkaClient } from '@core/kafka'
 
 dotenv.config({ quiet: true })
-
 const brokers = [process.env.KAFKA_BROKERS!]
 
+interface MessageState {
+  topic: string
+  partition: number
+  offset: string
+}
+
 export async function startOrderConsumer(replay = false) {
-  // 🔥 dynamic groupId
   const groupId = replay
     ? `read-service-users-replay-${Date.now()}`
     : 'read-service-users'
@@ -43,12 +23,13 @@ export async function startOrderConsumer(replay = false) {
 
   await consumer.subscribe({
     topic: 'users.events',
-    fromBeginning: replay, // only true in replay mode
+    fromBeginning: replay,
   })
 
   await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
+    eachMessage: async ({ topic, partition, message, heartbeat }) => {
       try {
+        await heartbeat()
         const envelope: EventEnvelope<any> = JSON.parse(
           message.value!.toString()
         )
