@@ -10,6 +10,10 @@ export const USER_EVENTS_TYPE = {
   USER_CREATED: 'USER_CREATED',
 } as const
 
+export const DLQ_EVENTS_TYPE = {
+  DLQ_MESSAGE: 'DLQ_MESSAGE',
+} as const
+
 export enum OrderEvents {
   CREATED = 'ORDER_CREATED',
   STOCK_RESERVED = 'STOCK_RESERVED',

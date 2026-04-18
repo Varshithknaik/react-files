@@ -4,6 +4,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/client-order-service"
 }
 
 datasource db {
@@ -46,3 +47,28 @@ model OrderItem{
   inventory Inventory @relation(fields: [inventoryId], references: [sku])
   quantity Int
 }
+
+model processedEvent {
+  eventId String @id @map("event_id")
+  eventType String @map("event_type")
+  topic String
+  partition Int
+  offset BigInt
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@index([eventType])
+  @@index([processedAt])
+  @@map("process_events")
+}
+
+// ==== In case of Exactly-once =======
+// model ConsumerOffset{
+//   topicPartition String @id @map("topic_partition")
+//   consumerGroup String
+//   offset BigInt
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   @@index([consumerGroup])
+//   @@map("consumer_offsets")
+// }
+// ====== ** ============

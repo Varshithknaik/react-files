@@ -1,6 +1,14 @@
-import { EventEnvelope, TOPICS } from '@core/events'
+import {
+  createEventEnvelopeSchema,
+  DLQ_EVENTS_TYPE,
+  EventEnvelope,
+  TOPICS,
+} from '@core/events'
 import dotenv from 'dotenv'
 import { KafkaClient } from '@core/kafka'
+import { z } from 'zod'
+import { logger } from '@core/logger'
+import { processEvent } from './EventProcessor.js'
 
 dotenv.config({ quiet: true })
 const brokers = [process.env.KAFKA_BROKERS!]
@@ -25,19 +33,58 @@ export async function startUserConsumer(replay = false) {
   await consumer.run({
     autoCommit: false,
     eachMessage: async ({ topic, partition, message, heartbeat }) => {
-      // const offset = message.offset
-      try {
-        await heartbeat()
+      const offset = message.offset
+      let envelope: EventEnvelope<unknown>
+      await heartbeat()
 
-        const envelope: EventEnvelope<any> = JSON.parse(
-          message.value!.toString()
+      try {
+        const raw = JSON.parse(message.value!.toString())
+
+        envelope = createEventEnvelopeSchema(z.any()).parse(raw)
+
+        logger.info(`[${groupId}] ${topic}[${partition}]`, envelope)
+      } catch (err) {
+        logger.error(
+          `[POISON PILL] Unseparable message at ${topic}[${partition}]:${offset}`,
+          err
         )
 
-        console.log(`[${groupId}] ${topic}[${partition}]`, envelope)
+        await kafka.sendToDLQ({
+          eventId: crypto.randomUUID(),
+          eventType: DLQ_EVENTS_TYPE.DLQ_MESSAGE,
+          occurredAt: new Date().toISOString(),
+          version: 1,
+          payload: {
+            originalTopic: topic,
+            originalPartition: partition,
+            originalOffset: offset,
+            originalTimestamp: message.timestamp,
+            rawPayload: message.value?.toString() ?? '',
+            errorMessage: err instanceof Error ? err.message : String(err),
+            errorStack: err instanceof Error ? (err.stack ?? '') : '',
+            failedAt: new Date().toISOString(),
+            consumerGroup: groupId,
+            retryCount: 0,
+          },
+        })
 
-        // 👉 TODO: process event safely (idempotent!)
-      } catch (err) {
-        console.error('Failed to process message', err)
+        // Commit to skip past the poison pill
+        await consumer.commitOffsets([
+          { topic, partition, offset: (BigInt(offset) + 1n).toString() },
+        ])
+        logger.info(
+          `[DLQ] Committed past poison pill at ${topic}[${partition}]:${offset}`
+        )
+        return
+      }
+
+      let lastError: Error | null = null
+
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          await heartbeat()
+          await processEvent(envelope, topic, partition, offset)
+        } catch (error) {}
       }
     },
   })
