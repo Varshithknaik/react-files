@@ -1,17 +1,13 @@
-import { EventEnvelope } from '@core/events'
+import { EventEnvelope, USER_TOPICS } from '@core/events'
 import dotenv from 'dotenv'
 import { KafkaClient } from '@core/kafka'
 
 dotenv.config({ quiet: true })
 const brokers = [process.env.KAFKA_BROKERS!]
+const MAX_RETRIES = 3
+const RETRY_BACKOFF_MS = 1000 // doubles each retry: 1s, 2s, 3s
 
-interface MessageState {
-  topic: string
-  partition: number
-  offset: string
-}
-
-export async function startOrderConsumer(replay = false) {
+export async function startUserConsumer(replay = false) {
   const groupId = replay
     ? `read-service-users-replay-${Date.now()}`
     : 'read-service-users'
@@ -22,14 +18,17 @@ export async function startOrderConsumer(replay = false) {
   await consumer.connect()
 
   await consumer.subscribe({
-    topic: 'users.events',
+    topic: USER_TOPICS.USER_CREATED,
     fromBeginning: replay,
   })
 
   await consumer.run({
+    autoCommit: false,
     eachMessage: async ({ topic, partition, message, heartbeat }) => {
+      const offset = message.offset
       try {
         await heartbeat()
+
         const envelope: EventEnvelope<any> = JSON.parse(
           message.value!.toString()
         )

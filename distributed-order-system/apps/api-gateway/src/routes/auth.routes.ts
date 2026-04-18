@@ -2,7 +2,8 @@ import { Router } from 'express'
 import { Request, Response, NextFunction } from 'express'
 import { createUser } from '../repository/user.repository.js'
 import { publish } from '../events/produce.js'
-import { USER_TOPICS } from '@core/events'
+import { USER_TOPICS, UserCreatedEvent } from '@core/events'
+import { createUserSchema } from '../schema/user.schema.js'
 
 export const authRouter = Router()
 
@@ -12,22 +13,24 @@ authRouter.post(
     console.log('got here')
     const { email, name } = req.body
 
-    if (!email || !name) {
-      return res.status(400).json({ error: 'Email and name are required' })
+    const result = createUserSchema.safeParse({ email, name })
+
+    if (!result.success) {
+      return res.status(400).json({ error: 'Invalid request' })
     }
 
     try {
       const { id } = await createUser(email, name)
       res.status(200).json({ id })
 
-      publish(USER_TOPICS.USER_CREATED, {
+      publish<UserCreatedEvent>(USER_TOPICS.USER_CREATED, {
         eventId: crypto.randomUUID(),
         eventType: USER_TOPICS.USER_CREATED,
         occurredAt: new Date().toISOString(),
         version: 1,
         payload: {
-          email,
-          name,
+          email: result.data.email,
+          name: result.data.name,
           id,
         },
       })

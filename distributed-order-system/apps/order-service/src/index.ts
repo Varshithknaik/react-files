@@ -3,7 +3,7 @@ import { logger } from '@core/logger'
 import grpc from '@grpc/grpc-js'
 import { OrderServiceService } from '@core/proto'
 import { orderService } from './handle.js'
-import { startOrderConsumer } from './events/consumer.js'
+import { startUserConsumer } from './events/user-consumer.js'
 
 dotenv.config({ quiet: true })
 
@@ -27,6 +27,6 @@ export const startOrderGrpc = () => {
     }
   )
 
-  startOrderConsumer(true)
+  startUserConsumer(false)
 }
 startOrderGrpc()

@@ -16,10 +16,7 @@ async function getProducer() {
   return producer
 }
 
-export async function publish<T extends z.ZodTypeAny>(
-  topic: string,
-  envelope: EventEnvelope<T>
-) {
+export async function publish<T>(topic: string, envelope: EventEnvelope<T>) {
   const producer = await getProducer()
   await producer.send({
     topic,

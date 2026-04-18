@@ -19,17 +19,24 @@ export const USER_TOPICS = {
   USER_CREATED: 'users.events',
 } as const
 
-export const eventEnvelopeSchema = <T extends z.ZodTypeAny>(payloadSchema: T) =>
-  z
-    .object({
-      eventId: z.uuid(),
-      eventType: z.string(),
-      occurredAt: z.string(), // ISO 8601
-      version: z.number().int().positive(),
+const baseEnvelopeSchema = z.object({
+  eventId: z.uuid(),
+  eventType: z.string(),
+  occurredAt: z.iso.datetime(), // ISO 8601
+  version: z.number().int().positive(),
+})
+
+export interface EventEnvelope<T> extends z.infer<typeof baseEnvelopeSchema> {
+  payload: T
+}
+
+export const createEventEnvelopeSchema = <T extends z.ZodTypeAny>(
+  payloadSchema: T
+) =>
+  baseEnvelopeSchema
+    .extend({
       payload: payloadSchema,
     })
     .strict()
 
-export type EventEnvelope<T extends z.ZodTypeAny> = z.infer<
-  ReturnType<typeof eventEnvelopeSchema<T>>
->
+export * from './schemas/index.js'
