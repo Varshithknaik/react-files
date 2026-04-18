@@ -1,6 +1,8 @@
 import { Kafka, Partitioners, type Producer, type Consumer } from 'kafkajs'
 import fs from 'fs'
 import dotenv from 'dotenv'
+import { logger } from '@core/logger'
+import { DLQMessage, EventEnvelope, TOPICS } from '@core/events'
 
 dotenv.config({ quiet: true })
 
@@ -13,6 +15,8 @@ function resolvePath(p: string) {
 
 export class KafkaClient {
   private kafka: Kafka
+  private producer: Producer | null = null
+
   constructor(clientId: string, brokers: string[]) {
     const caPath = resolvePath(process.env.KAFKA_CA!)
     const certPath = resolvePath(process.env.KAFKA_CERT!)
@@ -36,5 +40,69 @@ export class KafkaClient {
   }
   createConsumer(groupId: string): Consumer {
     return this.kafka.consumer({ groupId })
+  }
+
+  async getProducer() {
+    if (this.producer) return this.producer
+    this.producer = this.createProducer()
+    try {
+      await this.producer.connect()
+    } catch (error) {
+      logger.error(error)
+    }
+    return this.producer
+  }
+
+  async publish<T>(
+    topic: string,
+    envelope: EventEnvelope<T>,
+    headers?: Record<string, string>
+  ) {
+    try {
+      const producer = await this.getProducer()
+      await producer.send({
+        topic,
+        messages: [
+          {
+            key: envelope.eventId,
+            value: JSON.stringify(envelope),
+            headers,
+          },
+        ],
+      })
+    } catch (error) {
+      logger.error('Failed to send message to Kafka', error)
+    }
+  }
+
+  async sendToDLQ(envelope: EventEnvelope<DLQMessage>) {
+    const headers = {
+      'x-original-topic': envelope.payload.originalTopic,
+      'x-error-type': envelope.payload.errorMessage.split(':')[0],
+      'x-failed-at': envelope.payload.failedAt,
+    }
+    try {
+      await this.publish(TOPICS.DLQ, envelope, headers)
+      logger.info(
+        `[DLQ] Published to ${TOPICS.DLQ} | ` +
+          `Original: ${envelope.payload.originalTopic}[${envelope.payload.originalPartition}]:${envelope.payload.originalOffset}`
+      )
+    } catch (error) {
+      logger.error('[DLQ CRITICAL] Failed to send to DLQ!', error)
+      logger.error(
+        '[DLQ CRITICAL] Lost message:',
+        JSON.stringify(envelope.payload)
+      )
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.producer) {
+      try {
+        await this.producer.disconnect()
+      } catch (error) {
+        logger.error(error)
+      }
+    }
   }
 }

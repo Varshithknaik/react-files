@@ -1,4 +1,4 @@
-import { EventEnvelope, USER_TOPICS } from '@core/events'
+import { EventEnvelope, TOPICS } from '@core/events'
 import dotenv from 'dotenv'
 import { KafkaClient } from '@core/kafka'
 
@@ -18,14 +18,14 @@ export async function startUserConsumer(replay = false) {
   await consumer.connect()
 
   await consumer.subscribe({
-    topic: USER_TOPICS.USER_CREATED,
-    fromBeginning: replay,
+    topic: TOPICS.USER_EVENTS,
+    fromBeginning: true,
   })
 
   await consumer.run({
     autoCommit: false,
     eachMessage: async ({ topic, partition, message, heartbeat }) => {
-      const offset = message.offset
+      // const offset = message.offset
       try {
         await heartbeat()
 

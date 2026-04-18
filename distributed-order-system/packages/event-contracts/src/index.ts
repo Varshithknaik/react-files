@@ -1,8 +1,14 @@
 import { z } from 'zod'
 
-export enum OrderTopics {
-  ORDER_LIFECYCLE = 'order-lifecycle',
-}
+export const TOPICS = {
+  ORDER_EVENTS: 'order.events',
+  USER_EVENTS: 'users.events',
+  DLQ: 'dlq',
+} as const
+
+export const USER_EVENTS_TYPE = {
+  USER_CREATED: 'USER_CREATED',
+} as const
 
 export enum OrderEvents {
   CREATED = 'ORDER_CREATED',
@@ -14,10 +20,6 @@ export interface OrderCreatedPayload {
   userId: string
   total: number
 }
-
-export const USER_TOPICS = {
-  USER_CREATED: 'users.events',
-} as const
 
 const baseEnvelopeSchema = z.object({
   eventId: z.uuid(),

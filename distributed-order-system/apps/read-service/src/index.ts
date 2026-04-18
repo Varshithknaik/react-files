@@ -2,7 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import { KafkaClient } from '@core/kafka'
-import { OrderTopics, OrderEvents } from '@core/events'
+import { TOPICS } from '@core/events'
 import { logger } from '@core/logger'
 
 dotenv.config({ quiet: true })
@@ -29,7 +29,7 @@ app.get('/orders/:id', async (req, res) => {
 const start = async () => {
   await mongoose.connect(process.env.MONGO_URI!)
   await consumer.connect()
-  await consumer.subscribe({ topic: OrderTopics.ORDER_LIFECYCLE })
+  await consumer.subscribe({ topic: TOPICS.ORDER_EVENTS })
   await consumer.run({})
   await consumer.run({
     eachMessage: async ({ message }) => {
