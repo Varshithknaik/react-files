@@ -84,7 +84,23 @@ export async function startUserConsumer(replay = false) {
         try {
           await heartbeat()
           await processEvent(envelope, topic, partition, offset)
-        } catch (error) {}
+          lastError = null
+          break
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error))
+          logger.error(
+            `[${groupId}] ${topic}[${partition}]:${offset} - Attempt ${attempt + 1} failed`,
+            lastError
+          )
+
+          if (attempt < MAX_RETRIES - 1) {
+            const delay = RETRY_BACKOFF_MS * Math.pow(2, attempt)
+            logger.info(
+              `[${groupId}] ${topic}[${partition}]:${offset} - Retrying in ${delay}ms`
+            )
+            await new Promise((resolve) => setTimeout(resolve, delay))
+          }
+        }
       }
     },
   })
