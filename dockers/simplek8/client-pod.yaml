@@ -7,6 +7,6 @@ metadata:
 spec:
   containers:
     - name: client
-      image: varshithknaik/docker-multi-client
+      image: varshithknaik/docker-multi-worker
       ports:
         - containerPort: 3000
