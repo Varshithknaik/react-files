@@ -30,7 +30,6 @@ const start = async () => {
   await mongoose.connect(process.env.MONGO_URI!)
   await consumer.connect()
   await consumer.subscribe({ topic: TOPICS.ORDER_EVENTS })
-  await consumer.run({})
   await consumer.run({
     eachMessage: async ({ message }) => {
       const event = JSON.parse(message.value!.toString())
