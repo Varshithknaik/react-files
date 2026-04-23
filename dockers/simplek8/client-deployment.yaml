@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: client-deployment
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       component: web
@@ -13,7 +13,5 @@ spec:
         component: web
     spec:
       containers:
-        - name: client
-          image: varshithknaik/docker-multi-client
-          ports:
-            - containerPort: 9999
+        - name: worker
+          image: varshithknaik/docker-multi-worker
