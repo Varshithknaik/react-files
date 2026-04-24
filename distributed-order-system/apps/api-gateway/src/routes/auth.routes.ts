@@ -44,7 +44,7 @@ authRouter.post(
       })
       res.status(200).json({ id: userId })
     } catch (error) {
-      logger.error('Failed to create user/ publish event:', error)
+      logger.error('Failed to create user and publish event', error)
       return res.status(500).json({ error: 'Internal server error' })
     }
   }

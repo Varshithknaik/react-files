@@ -36,16 +36,41 @@ export async function processEvent(
           await handleUserCreated(tx, payload)
           break
         default:
-          logger.warn(`[IDEMPOTENT] Unknown event type: ${envelope.eventType}`)
+          logger.warn(
+            '[IDEMPOTENT] Unknown event type received in ORDER SERVICE',
+            {
+              eventId,
+              eventType,
+              topic,
+              partition,
+              offset,
+            }
+          )
       }
     })
   } catch (error: any) {
     if (error.code === 'P2002') {
-      logger.info(`[IDEMPOTENT] Already processed ${eventId}`)
+      logger.info('[IDEMPOTENT] Event already processed in ORDER SERVICE', {
+        eventId,
+        eventType,
+        topic,
+        partition,
+        offset,
+      })
       return
     }
 
-    logger.error(`[EVENT ERROR] ${eventId}`, error)
+    logger.error(
+      '[CRITICAL] Event processing failed in ORDER SERVICE',
+      {
+        eventId,
+        eventType,
+        topic,
+        partition,
+        offset,
+      },
+      error
+    )
     throw error
   }
 }
