@@ -1,4 +1,10 @@
-import { Kafka, Partitioners, type Producer, type Consumer } from 'kafkajs'
+import {
+  Kafka,
+  Partitioners,
+  type Producer,
+  type Consumer,
+  ConsumerConfig,
+} from 'kafkajs'
 import fs from 'fs'
 import dotenv from 'dotenv'
 import { logger } from '@core/logger'
@@ -38,8 +44,23 @@ export class KafkaClient {
       createPartitioner: Partitioners.LegacyPartitioner,
     })
   }
-  createConsumer(groupId: string): Consumer {
-    return this.kafka.consumer({ groupId })
+  createConsumer(
+    groupId: string,
+    overrides?: Partial<ConsumerConfig>
+  ): Consumer {
+    return this.kafka.consumer({
+      groupId,
+      sessionTimeout: 30000, // 30s is default. Increase if your webhook is slow
+      heartbeatInterval: 10000, // send heartbeat every 10s (default)
+      rebalanceTimeout: 5000, // 5s before giving up on rebalance (default)
+      maxWaitTimeInMs: 1000, // max time to wait for new messages (1s default)
+      retry: {
+        retries: 5, // KafkaJS-level retries (connection/protocol)
+        initialRetryTime: 300,
+        maxRetryTime: 30000,
+      },
+      ...overrides,
+    })
   }
 
   async getProducer() {

@@ -1,21 +1,14 @@
-import {
-  EventEnvelope,
-  USER_EVENTS_TYPE,
-  userCreatedSchema,
-} from '@core/events'
+import { EventEnvelope, USER_EVENTS_TYPE } from '@core/events'
 import { prisma } from '../lib/prisma.js'
 import { logger } from '@core/logger'
 import { handleUserCreated } from '../handler/user.handler.js'
-
-export const eventHandlers = {
-  [USER_EVENTS_TYPE.USER_CREATED]: handleUserCreated,
-} as const
 
 export async function processEvent(
   envelope: EventEnvelope<unknown>,
   topic: string,
   partition: number,
-  offset: string
+  offset: string,
+  retry = 0
 ): Promise<void> {
   const { eventId, eventType, payload } = envelope
 
@@ -56,6 +49,7 @@ export async function processEvent(
         topic,
         partition,
         offset,
+        retry,
       })
       return
     }
@@ -68,6 +62,7 @@ export async function processEvent(
         topic,
         partition,
         offset,
+        retry,
       },
       error
     )
