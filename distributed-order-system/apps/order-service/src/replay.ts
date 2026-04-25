@@ -11,11 +11,12 @@ args.forEach((arg) => {
   const [key, value] = arg.split('=')
   parsed[key.replace(/^--/, '')] = value
 })
-const fromOffset = parsed.offset
-const partition = parsed.partition ? parseInt(parsed.partition) : undefined
-const stopAfter = parsed.stopAfter ? parseInt(parsed.stopAfter) : undefined
 
-if (!fromOffset || partition === undefined) {
+const fromOffset = parsed.offset || process.env.REPLAY_OFFSET
+const partition = parseInt(parsed.partition || process.env.REPLAY_PARTITION!)
+const stopAfter = parseInt(parsed.stopAfter || process.env.REPLAY_STOP_AFTER!)
+
+if (!fromOffset || partition === undefined || !stopAfter) {
   logger.error(
     '[ORDER REPLAY] Partition and offset are required for replayFromOffset'
   )

@@ -139,8 +139,8 @@ export async function handlePoisonPill(
   } catch (dlqError) {
     logger.error('Error while sending to DLQ', { error: dlqError })
   } finally {
-    // await consumer.commitOffsets([
-    //   { topic, partition, offset: (BigInt(offset) + 1n).toString() },
-    // ])
+    await consumer.commitOffsets([
+      { topic, partition, offset: (BigInt(offset) + 1n).toString() },
+    ])
   }
 }

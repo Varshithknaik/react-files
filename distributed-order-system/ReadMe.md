@@ -51,3 +51,20 @@ offsets at the Kafka level, we handle replay directly in code.
 4. Run it — it creates an ephemeral group, processes just the missed message(s), then stops
 
 `replay.ts` — standalone CLI script so you can `run npm run replay:order -- --offset 7 --partition 0 --stop-after`
+
+# Replay Job in GCP
+
+```bash
+gcloud run jobs create replay-order \
+  --image <your-image>:latest \
+  --command "node" \
+  --args "apps/order-service/dist/replay.js" \
+  --set-env-vars "REPLAY_OFFSET=7,REPLAY_PARTITION=0,REPLAY_STOP_AFTER=1" \
+  --region <your-region>
+
+# Execute it (each time you need a replay)
+gcloud run jobs execute replay-order \
+  --update-env-vars "REPLAY_OFFSET=7,REPLAY_PARTITION=0,REPLAY_STOP_AFTER=1"
+```
+
+Note: We have to use the image that has the event replay code.
