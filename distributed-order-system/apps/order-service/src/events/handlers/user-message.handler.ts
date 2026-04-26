@@ -7,10 +7,10 @@ import { KafkaClient } from '@core/kafka'
 import { logger } from '@core/logger'
 import { Consumer } from 'kafkajs'
 import { z } from 'zod'
-import { processUserEvent } from './handlers/user-event.handler.js'
+import { processUserEvent } from './user-event.handler.js'
 
 const MAX_RETRIES = 3
-const RETRY_BACKOFF_MS = 1000 // doubles each retry: 1s, 2s, 3s
+const RETRY_BACKOFF_MS = 1000
 
 export interface HandleUserMessageParams {
   kafka: KafkaClient
@@ -43,13 +43,14 @@ export async function handleUserMessage({
 }: HandleUserMessageParams) {
   const offset = message.offset
   let envelope: EventEnvelope<unknown>
+
   await heartbeat()
 
   try {
     const raw = JSON.parse(message.value!.toString())
     envelope = createEventEnvelopeSchema(z.any()).parse(raw)
   } catch (err) {
-    handlePoisonPill(
+    await handlePoisonPill(
       {
         kafka,
         consumer,
@@ -85,7 +86,6 @@ export async function handleUserMessage({
   }
 
   if (lastError) {
-    // All retries failed → send to DLQ
     await handlePoisonPill(
       {
         kafka,
@@ -108,6 +108,7 @@ export async function handlePoisonPill(
   logMessage: string
 ) {
   const { groupId, topic, partition, message, kafka, offset, consumer } = ctx
+
   logger.error(
     logMessage,
     {

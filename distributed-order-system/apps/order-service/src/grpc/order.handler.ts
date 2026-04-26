@@ -1,21 +1,21 @@
 import {
-  OrderServiceServer,
   CreateOrderRequest,
   CreateOrderResponse,
+  OrderServiceServer,
 } from '@core/proto'
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
+import { createOrder } from '../domain/order.service.js'
 
 export const orderService: OrderServiceServer = {
-  createOrder: (
+  createOrder: async (
     call: ServerUnaryCall<CreateOrderRequest, CreateOrderResponse>,
     callback: sendUnaryData<CreateOrderResponse>
   ) => {
-    const { userId, items } = call.request
-    console.log(userId)
-    callback(null, {
-      orderId: '1',
-      status: '1',
-      total: 1,
-    })
+    try {
+      const response = await createOrder(call.request)
+      callback(null, response)
+    } catch (error) {
+      callback(error as Error, null as never)
+    }
   },
 }

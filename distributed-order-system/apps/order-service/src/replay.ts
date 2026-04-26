@@ -1,8 +1,6 @@
-import dotenv from 'dotenv'
+import './config/env.js'
 import { logger } from '@core/logger'
-import { replayFromOffset } from './events/replay-consumer.js'
-
-dotenv.config({ quiet: true })
+import { replayFromOffset } from './events/consumers/replay.consumer.js'
 
 const args = process.argv.slice(2)
 const parsed: Record<string, string> = {}

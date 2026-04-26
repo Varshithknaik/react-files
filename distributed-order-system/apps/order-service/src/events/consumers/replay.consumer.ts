@@ -1,12 +1,8 @@
 import { TOPICS } from '@core/events'
-import dotenv from 'dotenv'
-import { KafkaClient } from '@core/kafka'
 import { logger } from '@core/logger'
 import { Consumer } from 'kafkajs'
-import { handleUserMessage } from './message-handler.js'
-
-dotenv.config({ quiet: true })
-const brokers = [process.env.KAFKA_BROKERS!]
+import { createOrderKafkaClient } from '../../lib/kafka.js'
+import { handleUserMessage } from '../handlers/user-message.handler.js'
 
 export async function replayFromOffset(
   fromOffset: string,
@@ -18,15 +14,15 @@ export async function replayFromOffset(
   }
 
   const groupId = `order-service-replay-${Date.now()}`
-  const kafka = new KafkaClient(groupId, brokers)
+  const kafka = createOrderKafkaClient(groupId)
   const consumer = kafka.createConsumer(groupId)
 
   let processed = 0
   let seekApplied = false
 
-  let resovlveDone!: () => void
-  let done = new Promise<void>((resolve) => {
-    resovlveDone = resolve
+  let resolveDone!: () => void
+  const done = new Promise<void>((resolve) => {
+    resolveDone = resolve
   })
 
   await consumer.connect()
@@ -43,14 +39,7 @@ export async function replayFromOffset(
       message,
       heartbeat,
     }) => {
-      if (processed >= stopAfter) {
-        return
-      }
-      if (msgPartition !== partition) {
-        return
-      }
-
-      if (!seekApplied) {
+      if (processed >= stopAfter || msgPartition !== partition || !seekApplied) {
         return
       }
 
@@ -70,7 +59,7 @@ export async function replayFromOffset(
         setTimeout(async () => {
           await consumer.stop()
           await consumer.disconnect()
-          resovlveDone()
+          resolveDone()
         }, 0)
       }
     },

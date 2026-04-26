@@ -1,9 +1,10 @@
 import { EventEnvelope, USER_EVENTS_TYPE } from '@core/events'
-import { prisma } from '../lib/prisma.js'
 import { logger } from '@core/logger'
-import { handleUserCreated } from '../handler/user.handler.js'
+import { syncUserCreated } from '../../domain/user-sync.service.js'
+import { prisma } from '../../lib/prisma.js'
+import { recordProcessedEvent } from '../../repository/user.repository.js'
 
-export async function processEvent(
+export async function processUserEvent(
   envelope: EventEnvelope<unknown>,
   topic: string,
   partition: number,
@@ -14,19 +15,17 @@ export async function processEvent(
 
   try {
     await prisma.$transaction(async (tx) => {
-      await tx.processedEvent.create({
-        data: {
-          eventId,
-          eventType,
-          topic,
-          partition,
-          offset: BigInt(offset),
-        },
+      await recordProcessedEvent(tx, {
+        eventId,
+        eventType,
+        topic,
+        partition,
+        offset,
       })
 
-      switch (envelope.eventType) {
+      switch (eventType) {
         case USER_EVENTS_TYPE.USER_CREATED:
-          await handleUserCreated(tx, payload)
+          await syncUserCreated(tx, payload)
           break
         default:
           logger.warn(
