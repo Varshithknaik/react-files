@@ -14,7 +14,7 @@ const server = new grpc.Server()
 
 server.addService(OrderServiceService, orderService)
 
-export const startOrderGrpc = () => {
+export const startOrderGrpc = async () => {
   server.bindAsync(
     '0.0.0.0:50051',
     grpc.ServerCredentials.createInsecure(),
@@ -27,6 +27,11 @@ export const startOrderGrpc = () => {
     }
   )
 
-  startUserConsumer(false)
+  const { shutdown } = await startUserConsumer(false)
+  return { shutdown }
 }
-startOrderGrpc()
+
+const { shutdown } = await startOrderGrpc()
+
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)

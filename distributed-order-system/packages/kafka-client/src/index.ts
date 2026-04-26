@@ -93,6 +93,7 @@ export class KafkaClient {
       })
     } catch (error) {
       logger.error('Failed to send message to Kafka', error)
+      throw new Error('Failed to send message to Kafka')
     }
   }
 

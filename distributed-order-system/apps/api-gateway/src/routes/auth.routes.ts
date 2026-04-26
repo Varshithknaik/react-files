@@ -2,54 +2,87 @@ import { Router } from 'express'
 import { Request, Response, NextFunction } from 'express'
 import { publish } from '../events/produce.js'
 import { TOPICS, USER_EVENTS_TYPE, UserCreatedEvent } from '@core/events'
-import { createUserSchema } from '../schema/user.schema.js'
+import { createUserSchema, loginUserSchema } from '../schema/user.schema.js'
 import { prisma } from '../lib/prisma.js'
 import { logger } from '@core/logger'
+import jwt from 'jsonwebtoken'
+import { sendError, sendSuccess } from '../lib/http-response.js'
 
 export const authRouter = Router()
+const jwtSecret = process.env.JWT_SECRET as string
+
+authRouter.post('/register', async (req: Request, res: Response) => {
+  const { email, name } = req.body
+
+  const result = createUserSchema.safeParse({ email, name })
+
+  if (!result.success) {
+    return sendError(res, 400, 'Invalid request', result.error.flatten())
+  }
+
+  try {
+    const userId = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.users.create({
+        data: {
+          email: result.data.email,
+          name: result.data.name,
+        },
+      })
+
+      await publish<UserCreatedEvent>(TOPICS.USER_EVENTS, {
+        eventId: crypto.randomUUID(),
+        eventType: USER_EVENTS_TYPE.USER_CREATED,
+        occurredAt: new Date().toISOString(),
+        version: 1,
+        payload: {
+          email: result.data.email,
+          name: result.data.name,
+          id: newUser.id,
+        },
+      })
+
+      return newUser.id
+    })
+    return sendSuccess(res, 200, 'User registered successfully', { id: userId })
+  } catch (error) {
+    logger.error('Failed to create user and publish event', error)
+    return sendError(res, 500, 'Internal server error')
+  }
+})
 
 authRouter.post(
-  '/register',
+  '/login',
   async (req: Request, res: Response, next: NextFunction) => {
-    const { email, name } = req.body
+    const { email } = req.body
 
-    const result = createUserSchema.safeParse({ email, name })
+    const result = loginUserSchema.safeParse({ email })
 
     if (!result.success) {
-      return res.status(400).json({ error: 'Invalid request' })
+      return sendError(res, 400, 'Invalid request', result.error.flatten())
     }
 
     try {
-      const userId = await prisma.$transaction(async (tx) => {
-        const newUser = await tx.users.create({
-          data: {
-            email: result.data.email,
-            name: result.data.name,
-          },
-        })
-
-        await publish<UserCreatedEvent>(TOPICS.USER_EVENTS, {
-          eventId: crypto.randomUUID(),
-          eventType: USER_EVENTS_TYPE.USER_CREATED,
-          occurredAt: new Date().toISOString(),
-          version: 1,
-          payload: {
-            email: result.data.email,
-            name: result.data.name,
-            id: newUser.id,
-          },
-        })
-
-        return newUser.id
+      const user = await prisma.users.findUnique({
+        where: {
+          email: result.data.email,
+        },
       })
-      res.status(200).json({ id: userId })
+
+      if (!user) {
+        return sendError(res, 404, 'User not found')
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
+        expiresIn: '20m',
+      })
+      return sendSuccess(res, 200, 'Login successful', { token })
     } catch (error) {
-      logger.error('Failed to create user and publish event', error)
-      return res.status(500).json({ error: 'Internal server error' })
+      logger.error('Failed to login user', error)
+      return sendError(res, 500, 'Internal server error')
     }
   }
 )
 
 authRouter.get('/', async (req: Request, res: Response, next: NextFunction) => {
-  return res.status(200).json({ message: 'OK' })
+  return sendSuccess(res, 200, 'OK', null)
 })

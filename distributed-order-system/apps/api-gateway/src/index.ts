@@ -6,6 +6,7 @@ import { orderRouter } from './routes/commands/order.routes.js'
 import { authRouter } from './routes/auth.routes.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { sendSuccess } from './lib/http-response.js'
 
 dotenv.config({ quiet: true })
 
@@ -24,8 +25,7 @@ app.use('/user', authRouter)
 app.use('/commands/order', orderRouter)
 
 app.get('/health', (req, res) => {
-  res.send({
-    message: 'OK',
+  return sendSuccess(res, 200, 'OK', {
     timestamp: new Date().toISOString(),
   })
 })

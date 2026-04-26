@@ -16,6 +16,7 @@
     "gateway:local": "dotenv -e .env.local -- npx tsx watch apps/api-gateway/src/index.ts",
     "prisma:gateway": "dotenv -e .env.local -- sh -c 'cd apps/api-gateway && npx prisma generate && npx prisma migrate dev'",
     "prisma:order": "dotenv -e .env.local -- sh -c 'cd apps/order-service && npx prisma generate && npx prisma migrate dev'",
+    "prisma:inventory": "dotenv -e .env.local -- sh -c 'cd apps/inventory-service && npx prisma generate'",
     "web:build": "dotenv -e .env.local -- sh -c 'cd apps/web-client && npm run build'",
     "build": "tsc -b",
     "dev:local": "npm run prisma:gateway && npm run prisma:order && concurrently \"npm run gateway:local\" \"npm run order:local\"",
