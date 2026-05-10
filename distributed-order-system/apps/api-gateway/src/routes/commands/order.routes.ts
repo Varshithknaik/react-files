@@ -7,7 +7,6 @@ import { sendError, sendSuccess } from '../../lib/http-response.js'
 export const orderRouter = Router()
 
 orderRouter.get('/', (req: Request, res: Response) => {
-  console.log('got the request jerer')
   const request: CreateOrderRequest = { userId: '1', items: [] }
   orderClient.createOrder(
     request,

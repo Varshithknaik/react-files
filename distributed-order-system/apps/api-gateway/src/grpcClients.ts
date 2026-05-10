@@ -1,10 +1,16 @@
 import grpc from '@grpc/grpc-js'
-import { OrderServiceClient } from '@core/proto'
+import { InventoryServiceClient, OrderServiceClient } from '@core/proto'
 
-const credentials = grpc.credentials.createInsecure();
-const orderServiceAddress = 'localhost:50051';
+const credentials = grpc.credentials.createInsecure()
+const orderServiceAddress = 'localhost:50051'
+const inventoryServiceAddress = 'localhost:50052'
 
 export const orderClient = new OrderServiceClient(
   orderServiceAddress,
-  credentials,
+  credentials
+)
+
+export const inventoryClient = new InventoryServiceClient(
+  inventoryServiceAddress,
+  credentials
 )

@@ -5,6 +5,18 @@ package inventory;
 service InventoryService {
   rpc AddInventory (AddInventoryRequest) returns (AddInventoryResponse);
   rpc BulkAddInventory (BulkAddInventoryRequest) returns (BulkAddInventoryResponse);
+  rpc GetInventory (GetInventoryRequest) returns (GetInventoryResponse);
+  rpc ListInventory (ListInventoryRequest) returns (ListInventoryResponse);
+  rpc UpdateInventoryStock (UpdateInventoryStockRequest) returns (UpdateInventoryStockResponse);
+
+  // rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse);
+  // rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
+  // rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse);
+
+  // rpc GetReservation(GetReservationRequest) returns (ReservationResponse);
+  // rpc ListReservations(ListReservationsRequest) returns (ListReservationsResponse);
+  // rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+  // rpc CleanupZombieReservations(CleanupZombieReservationsRequest) returns (CleanupZombieReservationsResponse);
 }
 
 message AddInventoryRequest{
@@ -18,7 +30,6 @@ message AddInventoryRequest{
 
 message AddInventoryResponse{
   string sku = 1;
-  string message = 2;
 }
 
 message BulkAddInventoryRequest{
@@ -28,4 +39,44 @@ message BulkAddInventoryRequest{
 message BulkAddInventoryResponse{
   repeated AddInventoryResponse products = 1;
   int32 totalAdded = 2;
+}
+
+message GetInventoryRequest{
+  string sku = 1;
+}
+
+message GetInventoryResponse{
+  string sku = 1;
+  string name = 2;
+  string category = 3;
+  int32 stock = 4;
+  float price = 5;
+  optional float offerPrice = 6;
+}
+
+// TODO: requires paginations and sorting and some patch work
+message ListInventoryRequest{
+  optional string sku = 1;
+  optional string name = 2;
+  optional string category = 3;
+  optional int32 stock = 4;
+  optional float price = 5;
+  optional float offerPrice = 6;
+}
+
+message ListInventoryResponse{
+  repeated GetInventoryResponse products = 1;
+}
+
+message UpdateInventoryStockRequest{
+  string sku = 1;
+  int32 stock = 2;
+  optional float price = 3;
+  optional float offerPrice = 4;
+  optional string name = 5;
+  optional string category = 6;
+}
+
+message UpdateInventoryStockResponse{
+  string sku = 1;
 }
