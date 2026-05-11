@@ -24,3 +24,22 @@ inventoryRouter.post('/products', (req: Request, res: Response) => {
     return sendSuccess(res, 200, 'Inventory added successfully', resp)
   })
 })
+
+inventoryRouter.post('/products/bulk', (req: Request, res: Response) => {
+  const payload = addInventorySchema.array().safeParse(req.body)
+  if (!payload.success) {
+    return sendError(res, 400, 'Invalid payload', payload.error.message)
+  }
+
+  inventoryClient.bulkAddInventory({ products: payload.data }, (err, resp) => {
+    if (err) {
+      return sendError(
+        res,
+        grpcStatusToHttp(err.code),
+        'Failed to add inventory',
+        err.message
+      )
+    }
+    return sendSuccess(res, 200, 'Inventory added successfully', resp)
+  })
+})

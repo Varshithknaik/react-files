@@ -17,4 +17,16 @@ export const addInventoryDomainSchema = z
     }
   )
 
+export const bulkAddInventoryDomainSchema = z.object({
+  products: z
+    .array(addInventoryDomainSchema)
+    .min(1)
+    .refine(
+      (products) =>
+        new Set(products.map((p) => p.sku)).size === products.length,
+      { message: 'Duplicate SKUs are not allowed' }
+    ),
+})
+
 export type AddInventoryInput = z.infer<typeof addInventoryDomainSchema>
+export type BulkAddInventoryInput = z.infer<typeof bulkAddInventoryDomainSchema>
