@@ -28,5 +28,10 @@ export const bulkAddInventoryDomainSchema = z.object({
     ),
 })
 
+export const getInventoryDomainSchema = z.object({
+  sku: z.string().min(1),
+})
+
 export type AddInventoryInput = z.infer<typeof addInventoryDomainSchema>
 export type BulkAddInventoryInput = z.infer<typeof bulkAddInventoryDomainSchema>
+export type GetInventoryInput = z.infer<typeof getInventoryDomainSchema>
