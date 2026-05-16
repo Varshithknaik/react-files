@@ -55,6 +55,24 @@ message GetInventoryResponse{
 }
 
 // TODO: requires paginations and sorting and some patch work
+enum InventorySortField {
+  INVENTORY_SORT_FIELD_UNSPECIFIED = 0;
+  INVENTORY_SORT_FIELD_SKU = 1;
+  INVENTORY_SORT_FIELD_NAME = 2;
+  INVENTORY_SORT_FIELD_CATEGORY = 3;
+  INVENTORY_SORT_FIELD_STOCK = 4;
+  INVENTORY_SORT_FIELD_PRICE = 5;
+  INVENTORY_SORT_FIELD_OFFER_PRICE = 6;
+  INVENTORY_SORT_FIELD_CREATED_AT = 7;
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASC = 1;
+  SORT_DIRECTION_DESC = 2;
+}
+
+
 message ListInventoryRequest{
   optional string sku = 1;
   optional string name = 2;
@@ -62,10 +80,17 @@ message ListInventoryRequest{
   optional int32 stock = 4;
   optional float price = 5;
   optional float offerPrice = 6;
+
+  int32 limit = 7;
+  string cursor = 8;
+  InventorySortField sortField = 9;
+  SortDirection sortDirection = 10;
 }
 
 message ListInventoryResponse{
   repeated GetInventoryResponse products = 1;
+  string nextCursor = 2;
+  bool hasNext = 3;
 }
 
 message UpdateInventoryStockRequest{

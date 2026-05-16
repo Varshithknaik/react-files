@@ -19,6 +19,115 @@ import {
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
 
+/** TODO: requires paginations and sorting and some patch work */
+export enum InventorySortField {
+  INVENTORY_SORT_FIELD_UNSPECIFIED = 0,
+  INVENTORY_SORT_FIELD_SKU = 1,
+  INVENTORY_SORT_FIELD_NAME = 2,
+  INVENTORY_SORT_FIELD_CATEGORY = 3,
+  INVENTORY_SORT_FIELD_STOCK = 4,
+  INVENTORY_SORT_FIELD_PRICE = 5,
+  INVENTORY_SORT_FIELD_OFFER_PRICE = 6,
+  INVENTORY_SORT_FIELD_CREATED_AT = 7,
+  UNRECOGNIZED = -1,
+}
+
+export function inventorySortFieldFromJSON(object: any): InventorySortField {
+  switch (object) {
+    case 0:
+    case "INVENTORY_SORT_FIELD_UNSPECIFIED":
+      return InventorySortField.INVENTORY_SORT_FIELD_UNSPECIFIED;
+    case 1:
+    case "INVENTORY_SORT_FIELD_SKU":
+      return InventorySortField.INVENTORY_SORT_FIELD_SKU;
+    case 2:
+    case "INVENTORY_SORT_FIELD_NAME":
+      return InventorySortField.INVENTORY_SORT_FIELD_NAME;
+    case 3:
+    case "INVENTORY_SORT_FIELD_CATEGORY":
+      return InventorySortField.INVENTORY_SORT_FIELD_CATEGORY;
+    case 4:
+    case "INVENTORY_SORT_FIELD_STOCK":
+      return InventorySortField.INVENTORY_SORT_FIELD_STOCK;
+    case 5:
+    case "INVENTORY_SORT_FIELD_PRICE":
+      return InventorySortField.INVENTORY_SORT_FIELD_PRICE;
+    case 6:
+    case "INVENTORY_SORT_FIELD_OFFER_PRICE":
+      return InventorySortField.INVENTORY_SORT_FIELD_OFFER_PRICE;
+    case 7:
+    case "INVENTORY_SORT_FIELD_CREATED_AT":
+      return InventorySortField.INVENTORY_SORT_FIELD_CREATED_AT;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return InventorySortField.UNRECOGNIZED;
+  }
+}
+
+export function inventorySortFieldToJSON(object: InventorySortField): string {
+  switch (object) {
+    case InventorySortField.INVENTORY_SORT_FIELD_UNSPECIFIED:
+      return "INVENTORY_SORT_FIELD_UNSPECIFIED";
+    case InventorySortField.INVENTORY_SORT_FIELD_SKU:
+      return "INVENTORY_SORT_FIELD_SKU";
+    case InventorySortField.INVENTORY_SORT_FIELD_NAME:
+      return "INVENTORY_SORT_FIELD_NAME";
+    case InventorySortField.INVENTORY_SORT_FIELD_CATEGORY:
+      return "INVENTORY_SORT_FIELD_CATEGORY";
+    case InventorySortField.INVENTORY_SORT_FIELD_STOCK:
+      return "INVENTORY_SORT_FIELD_STOCK";
+    case InventorySortField.INVENTORY_SORT_FIELD_PRICE:
+      return "INVENTORY_SORT_FIELD_PRICE";
+    case InventorySortField.INVENTORY_SORT_FIELD_OFFER_PRICE:
+      return "INVENTORY_SORT_FIELD_OFFER_PRICE";
+    case InventorySortField.INVENTORY_SORT_FIELD_CREATED_AT:
+      return "INVENTORY_SORT_FIELD_CREATED_AT";
+    case InventorySortField.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0,
+  SORT_DIRECTION_ASC = 1,
+  SORT_DIRECTION_DESC = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function sortDirectionFromJSON(object: any): SortDirection {
+  switch (object) {
+    case 0:
+    case "SORT_DIRECTION_UNSPECIFIED":
+      return SortDirection.SORT_DIRECTION_UNSPECIFIED;
+    case 1:
+    case "SORT_DIRECTION_ASC":
+      return SortDirection.SORT_DIRECTION_ASC;
+    case 2:
+    case "SORT_DIRECTION_DESC":
+      return SortDirection.SORT_DIRECTION_DESC;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return SortDirection.UNRECOGNIZED;
+  }
+}
+
+export function sortDirectionToJSON(object: SortDirection): string {
+  switch (object) {
+    case SortDirection.SORT_DIRECTION_UNSPECIFIED:
+      return "SORT_DIRECTION_UNSPECIFIED";
+    case SortDirection.SORT_DIRECTION_ASC:
+      return "SORT_DIRECTION_ASC";
+    case SortDirection.SORT_DIRECTION_DESC:
+      return "SORT_DIRECTION_DESC";
+    case SortDirection.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface AddInventoryRequest {
   sku: string;
   name: string;
@@ -54,7 +163,6 @@ export interface GetInventoryResponse {
   offerPrice?: number | undefined;
 }
 
-/** TODO: requires paginations and sorting and some patch work */
 export interface ListInventoryRequest {
   sku?: string | undefined;
   name?: string | undefined;
@@ -62,10 +170,16 @@ export interface ListInventoryRequest {
   stock?: number | undefined;
   price?: number | undefined;
   offerPrice?: number | undefined;
+  limit: number;
+  cursor: string;
+  sortField: InventorySortField;
+  sortDirection: SortDirection;
 }
 
 export interface ListInventoryResponse {
   products: GetInventoryResponse[];
+  nextCursor: string;
+  hasNext: boolean;
 }
 
 export interface UpdateInventoryStockRequest {
@@ -625,6 +739,10 @@ function createBaseListInventoryRequest(): ListInventoryRequest {
     stock: undefined,
     price: undefined,
     offerPrice: undefined,
+    limit: 0,
+    cursor: "",
+    sortField: 0,
+    sortDirection: 0,
   };
 }
 
@@ -647,6 +765,18 @@ export const ListInventoryRequest: MessageFns<ListInventoryRequest> = {
     }
     if (message.offerPrice !== undefined) {
       writer.uint32(53).float(message.offerPrice);
+    }
+    if (message.limit !== 0) {
+      writer.uint32(56).int32(message.limit);
+    }
+    if (message.cursor !== "") {
+      writer.uint32(66).string(message.cursor);
+    }
+    if (message.sortField !== 0) {
+      writer.uint32(72).int32(message.sortField);
+    }
+    if (message.sortDirection !== 0) {
+      writer.uint32(80).int32(message.sortDirection);
     }
     return writer;
   },
@@ -706,6 +836,38 @@ export const ListInventoryRequest: MessageFns<ListInventoryRequest> = {
           message.offerPrice = reader.float();
           continue;
         }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.limit = reader.int32();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.cursor = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.sortField = reader.int32() as any;
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.sortDirection = reader.int32() as any;
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -723,6 +885,10 @@ export const ListInventoryRequest: MessageFns<ListInventoryRequest> = {
       stock: isSet(object.stock) ? globalThis.Number(object.stock) : undefined,
       price: isSet(object.price) ? globalThis.Number(object.price) : undefined,
       offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
+      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
+      cursor: isSet(object.cursor) ? globalThis.String(object.cursor) : "",
+      sortField: isSet(object.sortField) ? inventorySortFieldFromJSON(object.sortField) : 0,
+      sortDirection: isSet(object.sortDirection) ? sortDirectionFromJSON(object.sortDirection) : 0,
     };
   },
 
@@ -746,6 +912,18 @@ export const ListInventoryRequest: MessageFns<ListInventoryRequest> = {
     if (message.offerPrice !== undefined) {
       obj.offerPrice = message.offerPrice;
     }
+    if (message.limit !== 0) {
+      obj.limit = Math.round(message.limit);
+    }
+    if (message.cursor !== "") {
+      obj.cursor = message.cursor;
+    }
+    if (message.sortField !== 0) {
+      obj.sortField = inventorySortFieldToJSON(message.sortField);
+    }
+    if (message.sortDirection !== 0) {
+      obj.sortDirection = sortDirectionToJSON(message.sortDirection);
+    }
     return obj;
   },
 
@@ -760,18 +938,28 @@ export const ListInventoryRequest: MessageFns<ListInventoryRequest> = {
     message.stock = object.stock ?? undefined;
     message.price = object.price ?? undefined;
     message.offerPrice = object.offerPrice ?? undefined;
+    message.limit = object.limit ?? 0;
+    message.cursor = object.cursor ?? "";
+    message.sortField = object.sortField ?? 0;
+    message.sortDirection = object.sortDirection ?? 0;
     return message;
   },
 };
 
 function createBaseListInventoryResponse(): ListInventoryResponse {
-  return { products: [] };
+  return { products: [], nextCursor: "", hasNext: false };
 }
 
 export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
   encode(message: ListInventoryResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     for (const v of message.products) {
       GetInventoryResponse.encode(v!, writer.uint32(10).fork()).join();
+    }
+    if (message.nextCursor !== "") {
+      writer.uint32(18).string(message.nextCursor);
+    }
+    if (message.hasNext !== false) {
+      writer.uint32(24).bool(message.hasNext);
     }
     return writer;
   },
@@ -791,6 +979,22 @@ export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
           message.products.push(GetInventoryResponse.decode(reader, reader.uint32()));
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.nextCursor = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.hasNext = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -805,6 +1009,8 @@ export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
       products: globalThis.Array.isArray(object?.products)
         ? object.products.map((e: any) => GetInventoryResponse.fromJSON(e))
         : [],
+      nextCursor: isSet(object.nextCursor) ? globalThis.String(object.nextCursor) : "",
+      hasNext: isSet(object.hasNext) ? globalThis.Boolean(object.hasNext) : false,
     };
   },
 
@@ -812,6 +1018,12 @@ export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
     const obj: any = {};
     if (message.products?.length) {
       obj.products = message.products.map((e) => GetInventoryResponse.toJSON(e));
+    }
+    if (message.nextCursor !== "") {
+      obj.nextCursor = message.nextCursor;
+    }
+    if (message.hasNext !== false) {
+      obj.hasNext = message.hasNext;
     }
     return obj;
   },
@@ -822,6 +1034,8 @@ export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
   fromPartial<I extends Exact<DeepPartial<ListInventoryResponse>, I>>(object: I): ListInventoryResponse {
     const message = createBaseListInventoryResponse();
     message.products = object.products?.map((e) => GetInventoryResponse.fromPartial(e)) || [];
+    message.nextCursor = object.nextCursor ?? "";
+    message.hasNext = object.hasNext ?? false;
     return message;
   },
 };
