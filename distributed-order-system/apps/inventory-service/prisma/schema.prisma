@@ -51,3 +51,34 @@ model processedEvent {
   @@index([processedAt])
   @@map("process_events")
 }
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PUBLISHED
+  FAILED
+}
+
+model outBoxEvent {
+  id            String       @id @default(cuid())
+  aggregateType String       @map("aggregate_type")
+  aggregateId   String       @map("aggregate_id")
+  eventType     String       @map("event_type")
+  topic         String
+  payload       Json
+  headers       Json?
+  status        OutboxStatus @default(PENDING)
+  attempt       Int          @default(0)
+  nextAttemptAt DateTime     @default(now()) @map("next_attempt_at")
+  lockedAt      DateTime?    @map("locked_at")
+  lockedBy      String?      @map("locked_by")
+  publishedAt   DateTime?    @map("published_at")
+  lastError     String?      @map("last_error")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@index([status, nextAttemptAt])
+  @@index([aggregateType, aggregateId])
+  @@index([eventType])
+  @@map("outbox_events")
+}

@@ -7,7 +7,7 @@ const baseEnvelopeSchema = z.object({
   version: z.number().int().positive(),
 })
 
-export interface EventEnvelope<T> extends z.infer<typeof baseEnvelopeSchema> {
+export type EventEnvelope<T> = z.infer<typeof baseEnvelopeSchema> & {
   payload: T
 }
 
