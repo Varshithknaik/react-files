@@ -59,19 +59,60 @@ export async function addInventory(product: AddInventoryInput) {
 }
 
 export async function bulkAddInventory(products: BulkAddInventoryInput) {
-  return await prisma.products.createManyAndReturn({
-    data: products.products.map((product) => ({
-      sku: product.sku,
-      name: product.name,
-      category: product.category,
-      stock: product.stock,
-      price: product.price,
-      offerPrice: product.offerPrice,
-    })),
-    skipDuplicates: true,
-    select: {
-      sku: true,
-    },
+  return await prisma.$transaction(async (tx) => {
+    const createdItems = await tx.products.createManyAndReturn({
+      data: products.products.map((product) => ({
+        sku: product.sku,
+        name: product.name,
+        category: product.category,
+        stock: product.stock,
+        price: product.price,
+        offerPrice: product.offerPrice,
+      })),
+      skipDuplicates: true,
+      select: {
+        sku: true,
+        name: true,
+        category: true,
+        stock: true,
+        price: true,
+        offerPrice: true,
+        updatedAt: true,
+      },
+    })
+
+    const envelope: EventEnvelope<InventoryProductCreated>[] = []
+    for (const created of createdItems) {
+      envelope.push({
+        eventId: crypto.randomUUID(),
+        eventType: INVENTORY_EVENTS_TYPE.BULK_ADDED,
+        occurredAt: new Date().toISOString(),
+        version: 1,
+        payload: {
+          product: {
+            sku: created.sku,
+            name: created.name,
+            category: created.category,
+            stock: created.stock,
+            price: created.price,
+            offerPrice: created.offerPrice ?? undefined,
+            updatedAt: created.updatedAt.toISOString(),
+          },
+        },
+      })
+    }
+
+    await tx.outBoxEvent.create({
+      data: {
+        aggregateType: 'inventory.product',
+        aggregateId: crypto.randomUUID(),
+        topic: TOPICS.INVENTORY_EVENTS,
+        eventType: INVENTORY_EVENTS_TYPE.BULK_ADDED,
+        payload: envelope,
+      },
+    })
+
+    return createdItems.map((item) => ({ sku: item.sku }))
   })
 }
 

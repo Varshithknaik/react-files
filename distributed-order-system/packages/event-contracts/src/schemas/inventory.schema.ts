@@ -1,4 +1,5 @@
 import z from 'zod'
+import { createEventEnvelopeSchema } from '../envelope.js'
 
 export const InventoryProductSchema = z.object({
   sku: z.string(),
@@ -13,10 +14,16 @@ export const InventoryProductSchema = z.object({
 export const InventoryProductCreatedSchema = z.object({
   product: InventoryProductSchema,
 })
+export const InventoryProductCreatedEnvelopeSchema = createEventEnvelopeSchema(
+  InventoryProductCreatedSchema
+)
 
 export const InventoryBulkCreatedSchema = z.object({
   products: z.array(InventoryProductSchema),
 })
+export const InventoryBulkCreatedEnvelopeSchema = createEventEnvelopeSchema(
+  InventoryBulkCreatedSchema
+)
 
 export const InventoryProductUpdatedSchema = z.object({
   sku: z.string(),

@@ -3,6 +3,7 @@ export const TOPICS = {
   USER_EVENTS: 'users.events',
   INVENTORY_EVENTS: 'inventory.events',
   DLQ: 'dlq',
+  OTHER_EVENTS: 'other.events',
 } as const
 
 export const USER_EVENTS_TYPE = {
