@@ -18,5 +18,8 @@
     "**/Thumbs.db": true,
     "**/node_modules": true,
     "**/dist": true
-  }
+  },
+  "editor.codeLensFontSize": 2,
+  "editor.tabSize": 2,
+  "editor.fontSize": 12
 }
