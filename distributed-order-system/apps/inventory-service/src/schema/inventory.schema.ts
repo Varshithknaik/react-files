@@ -48,7 +48,17 @@ export const listInventoryDomainSchema = z.object({
   sortDirection: z.enum(SortDirection),
 })
 
+export const updateInventoryDomainSchema = z.object({
+  sku: z.string().min(1),
+  name: z.string().min(1).optional(),
+  category: z.string().min(1).optional(),
+  stock: z.number().int().min(0).optional(),
+  price: z.number().positive().optional(),
+  offerPrice: z.number().positive().optional(),
+})
+
 export type AddInventoryInput = z.infer<typeof addInventoryDomainSchema>
 export type BulkAddInventoryInput = z.infer<typeof bulkAddInventoryDomainSchema>
 export type GetInventoryInput = z.infer<typeof getInventoryDomainSchema>
 export type ListInventoryInput = z.infer<typeof listInventoryDomainSchema>
+export type UpdateInventoryInput = z.infer<typeof updateInventoryDomainSchema>

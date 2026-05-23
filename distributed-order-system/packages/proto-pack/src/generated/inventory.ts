@@ -182,16 +182,16 @@ export interface ListInventoryResponse {
   hasNext: boolean;
 }
 
-export interface UpdateInventoryStockRequest {
+export interface UpdateInventoryRequest {
   sku: string;
-  stock: number;
+  stock?: number | undefined;
   price?: number | undefined;
   offerPrice?: number | undefined;
   name?: string | undefined;
   category?: string | undefined;
 }
 
-export interface UpdateInventoryStockResponse {
+export interface UpdateInventoryResponse {
   sku: string;
 }
 
@@ -1040,16 +1040,16 @@ export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
   },
 };
 
-function createBaseUpdateInventoryStockRequest(): UpdateInventoryStockRequest {
-  return { sku: "", stock: 0, price: undefined, offerPrice: undefined, name: undefined, category: undefined };
+function createBaseUpdateInventoryRequest(): UpdateInventoryRequest {
+  return { sku: "", stock: undefined, price: undefined, offerPrice: undefined, name: undefined, category: undefined };
 }
 
-export const UpdateInventoryStockRequest: MessageFns<UpdateInventoryStockRequest> = {
-  encode(message: UpdateInventoryStockRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const UpdateInventoryRequest: MessageFns<UpdateInventoryRequest> = {
+  encode(message: UpdateInventoryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.sku !== "") {
       writer.uint32(10).string(message.sku);
     }
-    if (message.stock !== 0) {
+    if (message.stock !== undefined) {
       writer.uint32(16).int32(message.stock);
     }
     if (message.price !== undefined) {
@@ -1067,10 +1067,10 @@ export const UpdateInventoryStockRequest: MessageFns<UpdateInventoryStockRequest
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): UpdateInventoryStockRequest {
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateInventoryRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUpdateInventoryStockRequest();
+    const message = createBaseUpdateInventoryRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1131,10 +1131,10 @@ export const UpdateInventoryStockRequest: MessageFns<UpdateInventoryStockRequest
     return message;
   },
 
-  fromJSON(object: any): UpdateInventoryStockRequest {
+  fromJSON(object: any): UpdateInventoryRequest {
     return {
       sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
-      stock: isSet(object.stock) ? globalThis.Number(object.stock) : 0,
+      stock: isSet(object.stock) ? globalThis.Number(object.stock) : undefined,
       price: isSet(object.price) ? globalThis.Number(object.price) : undefined,
       offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
       name: isSet(object.name) ? globalThis.String(object.name) : undefined,
@@ -1142,12 +1142,12 @@ export const UpdateInventoryStockRequest: MessageFns<UpdateInventoryStockRequest
     };
   },
 
-  toJSON(message: UpdateInventoryStockRequest): unknown {
+  toJSON(message: UpdateInventoryRequest): unknown {
     const obj: any = {};
     if (message.sku !== "") {
       obj.sku = message.sku;
     }
-    if (message.stock !== 0) {
+    if (message.stock !== undefined) {
       obj.stock = Math.round(message.stock);
     }
     if (message.price !== undefined) {
@@ -1165,13 +1165,13 @@ export const UpdateInventoryStockRequest: MessageFns<UpdateInventoryStockRequest
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<UpdateInventoryStockRequest>, I>>(base?: I): UpdateInventoryStockRequest {
-    return UpdateInventoryStockRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<UpdateInventoryRequest>, I>>(base?: I): UpdateInventoryRequest {
+    return UpdateInventoryRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<UpdateInventoryStockRequest>, I>>(object: I): UpdateInventoryStockRequest {
-    const message = createBaseUpdateInventoryStockRequest();
+  fromPartial<I extends Exact<DeepPartial<UpdateInventoryRequest>, I>>(object: I): UpdateInventoryRequest {
+    const message = createBaseUpdateInventoryRequest();
     message.sku = object.sku ?? "";
-    message.stock = object.stock ?? 0;
+    message.stock = object.stock ?? undefined;
     message.price = object.price ?? undefined;
     message.offerPrice = object.offerPrice ?? undefined;
     message.name = object.name ?? undefined;
@@ -1180,22 +1180,22 @@ export const UpdateInventoryStockRequest: MessageFns<UpdateInventoryStockRequest
   },
 };
 
-function createBaseUpdateInventoryStockResponse(): UpdateInventoryStockResponse {
+function createBaseUpdateInventoryResponse(): UpdateInventoryResponse {
   return { sku: "" };
 }
 
-export const UpdateInventoryStockResponse: MessageFns<UpdateInventoryStockResponse> = {
-  encode(message: UpdateInventoryStockResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const UpdateInventoryResponse: MessageFns<UpdateInventoryResponse> = {
+  encode(message: UpdateInventoryResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.sku !== "") {
       writer.uint32(10).string(message.sku);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): UpdateInventoryStockResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateInventoryResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUpdateInventoryStockResponse();
+    const message = createBaseUpdateInventoryResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1216,11 +1216,11 @@ export const UpdateInventoryStockResponse: MessageFns<UpdateInventoryStockRespon
     return message;
   },
 
-  fromJSON(object: any): UpdateInventoryStockResponse {
+  fromJSON(object: any): UpdateInventoryResponse {
     return { sku: isSet(object.sku) ? globalThis.String(object.sku) : "" };
   },
 
-  toJSON(message: UpdateInventoryStockResponse): unknown {
+  toJSON(message: UpdateInventoryResponse): unknown {
     const obj: any = {};
     if (message.sku !== "") {
       obj.sku = message.sku;
@@ -1228,11 +1228,11 @@ export const UpdateInventoryStockResponse: MessageFns<UpdateInventoryStockRespon
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<UpdateInventoryStockResponse>, I>>(base?: I): UpdateInventoryStockResponse {
-    return UpdateInventoryStockResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<UpdateInventoryResponse>, I>>(base?: I): UpdateInventoryResponse {
+    return UpdateInventoryResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<UpdateInventoryStockResponse>, I>>(object: I): UpdateInventoryStockResponse {
-    const message = createBaseUpdateInventoryStockResponse();
+  fromPartial<I extends Exact<DeepPartial<UpdateInventoryResponse>, I>>(object: I): UpdateInventoryResponse {
+    const message = createBaseUpdateInventoryResponse();
     message.sku = object.sku ?? "";
     return message;
   },
@@ -1261,45 +1261,23 @@ export const InventoryServiceService = {
       Buffer.from(BulkAddInventoryResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): BulkAddInventoryResponse => BulkAddInventoryResponse.decode(value),
   },
-  getInventory: {
-    path: "/inventory.InventoryService/GetInventory" as const,
+  updateInventory: {
+    path: "/inventory.InventoryService/UpdateInventory" as const,
     requestStream: false as const,
     responseStream: false as const,
-    requestSerialize: (value: GetInventoryRequest): Buffer => Buffer.from(GetInventoryRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): GetInventoryRequest => GetInventoryRequest.decode(value),
-    responseSerialize: (value: GetInventoryResponse): Buffer =>
-      Buffer.from(GetInventoryResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): GetInventoryResponse => GetInventoryResponse.decode(value),
-  },
-  listInventory: {
-    path: "/inventory.InventoryService/ListInventory" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: ListInventoryRequest): Buffer => Buffer.from(ListInventoryRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): ListInventoryRequest => ListInventoryRequest.decode(value),
-    responseSerialize: (value: ListInventoryResponse): Buffer =>
-      Buffer.from(ListInventoryResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): ListInventoryResponse => ListInventoryResponse.decode(value),
-  },
-  updateInventoryStock: {
-    path: "/inventory.InventoryService/UpdateInventoryStock" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: UpdateInventoryStockRequest): Buffer =>
-      Buffer.from(UpdateInventoryStockRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): UpdateInventoryStockRequest => UpdateInventoryStockRequest.decode(value),
-    responseSerialize: (value: UpdateInventoryStockResponse): Buffer =>
-      Buffer.from(UpdateInventoryStockResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): UpdateInventoryStockResponse => UpdateInventoryStockResponse.decode(value),
+    requestSerialize: (value: UpdateInventoryRequest): Buffer =>
+      Buffer.from(UpdateInventoryRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): UpdateInventoryRequest => UpdateInventoryRequest.decode(value),
+    responseSerialize: (value: UpdateInventoryResponse): Buffer =>
+      Buffer.from(UpdateInventoryResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): UpdateInventoryResponse => UpdateInventoryResponse.decode(value),
   },
 } as const;
 
 export interface InventoryServiceServer extends UntypedServiceImplementation {
   addInventory: handleUnaryCall<AddInventoryRequest, AddInventoryResponse>;
   bulkAddInventory: handleUnaryCall<BulkAddInventoryRequest, BulkAddInventoryResponse>;
-  getInventory: handleUnaryCall<GetInventoryRequest, GetInventoryResponse>;
-  listInventory: handleUnaryCall<ListInventoryRequest, ListInventoryResponse>;
-  updateInventoryStock: handleUnaryCall<UpdateInventoryStockRequest, UpdateInventoryStockResponse>;
+  updateInventory: handleUnaryCall<UpdateInventoryRequest, UpdateInventoryResponse>;
 }
 
 export interface InventoryServiceClient extends Client {
@@ -1333,50 +1311,20 @@ export interface InventoryServiceClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: BulkAddInventoryResponse) => void,
   ): ClientUnaryCall;
-  getInventory(
-    request: GetInventoryRequest,
-    callback: (error: ServiceError | null, response: GetInventoryResponse) => void,
+  updateInventory(
+    request: UpdateInventoryRequest,
+    callback: (error: ServiceError | null, response: UpdateInventoryResponse) => void,
   ): ClientUnaryCall;
-  getInventory(
-    request: GetInventoryRequest,
+  updateInventory(
+    request: UpdateInventoryRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: GetInventoryResponse) => void,
+    callback: (error: ServiceError | null, response: UpdateInventoryResponse) => void,
   ): ClientUnaryCall;
-  getInventory(
-    request: GetInventoryRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: GetInventoryResponse) => void,
-  ): ClientUnaryCall;
-  listInventory(
-    request: ListInventoryRequest,
-    callback: (error: ServiceError | null, response: ListInventoryResponse) => void,
-  ): ClientUnaryCall;
-  listInventory(
-    request: ListInventoryRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: ListInventoryResponse) => void,
-  ): ClientUnaryCall;
-  listInventory(
-    request: ListInventoryRequest,
+  updateInventory(
+    request: UpdateInventoryRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: ListInventoryResponse) => void,
-  ): ClientUnaryCall;
-  updateInventoryStock(
-    request: UpdateInventoryStockRequest,
-    callback: (error: ServiceError | null, response: UpdateInventoryStockResponse) => void,
-  ): ClientUnaryCall;
-  updateInventoryStock(
-    request: UpdateInventoryStockRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UpdateInventoryStockResponse) => void,
-  ): ClientUnaryCall;
-  updateInventoryStock(
-    request: UpdateInventoryStockRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UpdateInventoryStockResponse) => void,
+    callback: (error: ServiceError | null, response: UpdateInventoryResponse) => void,
   ): ClientUnaryCall;
 }
 

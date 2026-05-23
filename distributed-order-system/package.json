@@ -26,7 +26,9 @@
     "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\"",
     "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,env=node,exportCommonSymbols=false --proto_path=packages/proto-pack/proto packages/proto-pack/proto/*.proto",
     "start:prod": "NODE_ENV=production concurrently \"node apps/order-service/dist/index.js\" \"node apps/api-gateway/dist/index.js\"",
-    "build:proto": "npm run proto:gen && tsc -b packages/proto-pack"
+    "build:proto": "npm run proto:gen && tsc -b packages/proto-pack",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -41,7 +43,8 @@
     "protoc-gen-ts": "^0.8.7",
     "rimraf": "^5.0.0",
     "ts-proto": "^2.11.4",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.59.4"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",

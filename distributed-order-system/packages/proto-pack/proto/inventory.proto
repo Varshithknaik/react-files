@@ -5,9 +5,7 @@ package inventory;
 service InventoryService {
   rpc AddInventory (AddInventoryRequest) returns (AddInventoryResponse);
   rpc BulkAddInventory (BulkAddInventoryRequest) returns (BulkAddInventoryResponse);
-  rpc GetInventory (GetInventoryRequest) returns (GetInventoryResponse);
-  rpc ListInventory (ListInventoryRequest) returns (ListInventoryResponse);
-  rpc UpdateInventoryStock (UpdateInventoryStockRequest) returns (UpdateInventoryStockResponse);
+  rpc UpdateInventory  (UpdateInventoryRequest) returns (UpdateInventoryResponse);
 
   // rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse);
   // rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
@@ -93,15 +91,15 @@ message ListInventoryResponse{
   bool hasNext = 3;
 }
 
-message UpdateInventoryStockRequest{
+message UpdateInventoryRequest{
   string sku = 1;
-  int32 stock = 2;
+  optional int32 stock = 2;
   optional float price = 3;
   optional float offerPrice = 4;
   optional string name = 5;
   optional string category = 6;
 }
 
-message UpdateInventoryStockResponse{
+message UpdateInventoryResponse{
   string sku = 1;
 }

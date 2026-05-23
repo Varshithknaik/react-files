@@ -2,8 +2,7 @@ import { Router, Request, Response } from 'express'
 import { sendError, sendSuccess } from '../../lib/http-response.js'
 import {
   addInventorySchema,
-  getInventoryListSchema,
-  getInventorySchema,
+  updateInventorySchema,
 } from '../../schema/inventory.schema.js'
 import { inventoryClient } from '../../grpcClients.js'
 import { grpcStatusToHttp } from '../../lib/grpc-status-map.js'
@@ -48,40 +47,24 @@ inventoryRouter.post('/products/bulk', (req: Request, res: Response) => {
   })
 })
 
-inventoryRouter.get('/products/:sku', (req: Request, res: Response) => {
-  const payload = getInventorySchema.safeParse(req.params)
-  if (!payload.success) {
-    return sendError(res, 400, 'Invalid payload', payload.error.message)
-  }
-
-  inventoryClient.getInventory(payload.data, (err, resp) => {
-    if (err) {
-      return sendError(
-        res,
-        grpcStatusToHttp(err.code),
-        'Failed to get inventory',
-        err.message
-      )
-    }
-    return sendSuccess(res, 200, 'Inventory fetched successfully', resp)
+inventoryRouter.patch('/products/:sku', (req: Request, res: Response) => {
+  const payload = updateInventorySchema.safeParse({
+    ...req.params,
+    ...req.body,
   })
-})
-
-inventoryRouter.get('/products/list', (req: Request, res: Response) => {
-  const payload = getInventoryListSchema.safeParse(req.params)
   if (!payload.success) {
     return sendError(res, 400, 'Invalid payload', payload.error.message)
   }
 
-  inventoryClient.listInventory(payload.data, (err, resp) => {
+  inventoryClient.updateInventory(payload.data, (err, resp) => {
     if (err) {
       return sendError(
         res,
         grpcStatusToHttp(err.code),
-        'Failed to get inventory',
+        'Failed to update inventory',
         err.message
       )
     }
-    return sendSuccess(res, 200, 'Inventory fetched successfully', resp)
+    return sendSuccess(res, 200, 'Inventory updated successfully', resp)
   })
 })

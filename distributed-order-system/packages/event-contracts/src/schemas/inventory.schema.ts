@@ -9,6 +9,7 @@ export const InventoryProductSchema = z.object({
   price: z.number(),
   offerPrice: z.number().optional(),
   updatedAt: z.string(),
+  version: z.number(),
 })
 
 export const InventoryProductCreatedSchema = z.object({
@@ -25,10 +26,11 @@ export const InventoryBulkCreatedEnvelopeSchema = createEventEnvelopeSchema(
   InventoryBulkCreatedSchema
 )
 
-export const InventoryProductUpdatedSchema = z.object({
-  sku: z.string(),
-  changedFields: z.array(InventoryProductSchema.keyof()),
-})
+export const InventoryProductUpdatedSchema =
+  InventoryProductSchema.partial().required({ sku: true, version: true })
+export const InventoryProductUpdatedEnvelopeSchema = createEventEnvelopeSchema(
+  InventoryProductUpdatedSchema
+)
 
 export const InventoryStockReservedSchema = z.object({
   orderId: z.string(),

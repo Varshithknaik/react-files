@@ -2,15 +2,14 @@ import { prisma } from '../lib/prisma.js'
 import {
   AddInventoryInput,
   BulkAddInventoryInput,
-  GetInventoryInput,
-  ListInventoryInput,
+  UpdateInventoryInput,
 } from '../schema/inventory.schema.js'
-import { DomainError, DOMAIN_ERROR_CODE } from '../lib/errors.js'
 import {
   EventEnvelope,
   InventoryProductCreated,
   TOPICS,
   INVENTORY_EVENTS_TYPE,
+  InventoryProductUpdated,
 } from '@core/events'
 
 export async function addInventory(product: AddInventoryInput) {
@@ -40,6 +39,7 @@ export async function addInventory(product: AddInventoryInput) {
           price: created.price,
           offerPrice: created.offerPrice ?? undefined,
           updatedAt: created.updatedAt.toISOString(),
+          version: created.version,
         },
       },
     }
@@ -78,6 +78,7 @@ export async function bulkAddInventory(products: BulkAddInventoryInput) {
         price: true,
         offerPrice: true,
         updatedAt: true,
+        version: true,
       },
     })
 
@@ -97,6 +98,7 @@ export async function bulkAddInventory(products: BulkAddInventoryInput) {
             price: created.price,
             offerPrice: created.offerPrice ?? undefined,
             updatedAt: created.updatedAt.toISOString(),
+            version: created.version,
           },
         },
       })
@@ -116,53 +118,53 @@ export async function bulkAddInventory(products: BulkAddInventoryInput) {
   })
 }
 
-export async function getInventory(product: GetInventoryInput) {
-  const result = await prisma.products.findUnique({
-    where: {
-      sku: product.sku,
-    },
-    select: {
-      sku: true,
-      name: true,
-      category: true,
-      stock: true,
-      price: true,
-      offerPrice: true,
-    },
-  })
-  if (!result) {
-    throw new DomainError(
-      DOMAIN_ERROR_CODE.NOT_FOUND,
-      'Product not found',
-      `No product found with SKU: ${product.sku}`
-    )
-  }
-  return result
-}
+export async function updateInventory(payload: UpdateInventoryInput) {
+  const { sku, ...rest } = payload
 
-export async function listInventory(filters: ListInventoryInput) {
-  return await prisma.products.findMany({
-    where: {
-      sku: filters.sku,
-      name: filters.name,
-      category: filters.category,
-      stock: filters.stock,
-      price: filters.price,
-      offerPrice: filters.offerPrice,
-    },
-    take: filters.limit + 1,
-    cursor: filters.cursor ? { sku: filters.cursor } : undefined,
-    skip: filters.cursor ? 1 : undefined,
-    orderBy: {
-      [filters.sortField]: filters.sortDirection,
-    },
-    select: {
-      sku: true,
-      name: true,
-      category: true,
-      stock: true,
-      price: true,
-      offerPrice: true,
-    },
+  return await prisma.$transaction(async (tx) => {
+    const updated = await tx.products.update({
+      where: { sku },
+      data: {
+        stock: rest.stock ?? undefined,
+        price: rest.price ?? undefined,
+        offerPrice: rest.offerPrice ?? undefined,
+        name: rest.name ?? undefined,
+        category: rest.category ?? undefined,
+        version: {
+          increment: 1,
+        },
+      },
+    })
+
+    console.log('updated', updated)
+
+    const envelope: EventEnvelope<InventoryProductUpdated> = {
+      eventId: crypto.randomUUID(),
+      eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
+      occurredAt: new Date().toISOString(),
+      version: 1,
+      payload: {
+        sku: updated.sku,
+        name: updated.name,
+        category: updated.category,
+        stock: updated.stock,
+        price: updated.price,
+        offerPrice: updated.offerPrice ?? undefined,
+        updatedAt: updated.updatedAt.toISOString(),
+        version: updated.version,
+      },
+    }
+
+    await tx.outBoxEvent.create({
+      data: {
+        aggregateType: 'inventory.product',
+        aggregateId: updated.sku,
+        topic: TOPICS.INVENTORY_EVENTS,
+        eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
+        payload: envelope,
+      },
+    })
+
+    return { sku: updated.sku }
   })
 }

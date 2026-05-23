@@ -2,6 +2,7 @@ import { EventEnvelope } from '@core/events'
 import { KafkaClient } from '@core/kafka'
 import { prisma } from '../../lib/prisma.js'
 import { z } from 'zod'
+import { logger } from '@core/logger'
 
 export const MAX_ATTEMPTS = 10
 
@@ -42,6 +43,7 @@ export async function publishOutboxEvent<T = unknown>(
         lastError: null,
       },
     })
+    logger.info(`[Inventry Outbox] Published outbox event with id ${id}`)
   } catch (error) {
     const attempts = attempt + 1
     await prisma.outBoxEvent.update({

@@ -30,7 +30,7 @@ function claimOutboxEvents() {
   return prisma.$transaction(async (tx) => {
     const rows = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT id
-      FROM outbox_event
+      FROM outbox_events
       WHERE status In ('PENDING', 'FAILED') 
         AND next_attempt_at <= NOW()
         AND attempt < ${MAX_ATTEMPTS}
