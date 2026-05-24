@@ -19,115 +19,6 @@ import {
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
 
-/** TODO: requires paginations and sorting and some patch work */
-export enum InventorySortField {
-  INVENTORY_SORT_FIELD_UNSPECIFIED = 0,
-  INVENTORY_SORT_FIELD_SKU = 1,
-  INVENTORY_SORT_FIELD_NAME = 2,
-  INVENTORY_SORT_FIELD_CATEGORY = 3,
-  INVENTORY_SORT_FIELD_STOCK = 4,
-  INVENTORY_SORT_FIELD_PRICE = 5,
-  INVENTORY_SORT_FIELD_OFFER_PRICE = 6,
-  INVENTORY_SORT_FIELD_CREATED_AT = 7,
-  UNRECOGNIZED = -1,
-}
-
-export function inventorySortFieldFromJSON(object: any): InventorySortField {
-  switch (object) {
-    case 0:
-    case "INVENTORY_SORT_FIELD_UNSPECIFIED":
-      return InventorySortField.INVENTORY_SORT_FIELD_UNSPECIFIED;
-    case 1:
-    case "INVENTORY_SORT_FIELD_SKU":
-      return InventorySortField.INVENTORY_SORT_FIELD_SKU;
-    case 2:
-    case "INVENTORY_SORT_FIELD_NAME":
-      return InventorySortField.INVENTORY_SORT_FIELD_NAME;
-    case 3:
-    case "INVENTORY_SORT_FIELD_CATEGORY":
-      return InventorySortField.INVENTORY_SORT_FIELD_CATEGORY;
-    case 4:
-    case "INVENTORY_SORT_FIELD_STOCK":
-      return InventorySortField.INVENTORY_SORT_FIELD_STOCK;
-    case 5:
-    case "INVENTORY_SORT_FIELD_PRICE":
-      return InventorySortField.INVENTORY_SORT_FIELD_PRICE;
-    case 6:
-    case "INVENTORY_SORT_FIELD_OFFER_PRICE":
-      return InventorySortField.INVENTORY_SORT_FIELD_OFFER_PRICE;
-    case 7:
-    case "INVENTORY_SORT_FIELD_CREATED_AT":
-      return InventorySortField.INVENTORY_SORT_FIELD_CREATED_AT;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return InventorySortField.UNRECOGNIZED;
-  }
-}
-
-export function inventorySortFieldToJSON(object: InventorySortField): string {
-  switch (object) {
-    case InventorySortField.INVENTORY_SORT_FIELD_UNSPECIFIED:
-      return "INVENTORY_SORT_FIELD_UNSPECIFIED";
-    case InventorySortField.INVENTORY_SORT_FIELD_SKU:
-      return "INVENTORY_SORT_FIELD_SKU";
-    case InventorySortField.INVENTORY_SORT_FIELD_NAME:
-      return "INVENTORY_SORT_FIELD_NAME";
-    case InventorySortField.INVENTORY_SORT_FIELD_CATEGORY:
-      return "INVENTORY_SORT_FIELD_CATEGORY";
-    case InventorySortField.INVENTORY_SORT_FIELD_STOCK:
-      return "INVENTORY_SORT_FIELD_STOCK";
-    case InventorySortField.INVENTORY_SORT_FIELD_PRICE:
-      return "INVENTORY_SORT_FIELD_PRICE";
-    case InventorySortField.INVENTORY_SORT_FIELD_OFFER_PRICE:
-      return "INVENTORY_SORT_FIELD_OFFER_PRICE";
-    case InventorySortField.INVENTORY_SORT_FIELD_CREATED_AT:
-      return "INVENTORY_SORT_FIELD_CREATED_AT";
-    case InventorySortField.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
-export enum SortDirection {
-  SORT_DIRECTION_UNSPECIFIED = 0,
-  SORT_DIRECTION_ASC = 1,
-  SORT_DIRECTION_DESC = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function sortDirectionFromJSON(object: any): SortDirection {
-  switch (object) {
-    case 0:
-    case "SORT_DIRECTION_UNSPECIFIED":
-      return SortDirection.SORT_DIRECTION_UNSPECIFIED;
-    case 1:
-    case "SORT_DIRECTION_ASC":
-      return SortDirection.SORT_DIRECTION_ASC;
-    case 2:
-    case "SORT_DIRECTION_DESC":
-      return SortDirection.SORT_DIRECTION_DESC;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return SortDirection.UNRECOGNIZED;
-  }
-}
-
-export function sortDirectionToJSON(object: SortDirection): string {
-  switch (object) {
-    case SortDirection.SORT_DIRECTION_UNSPECIFIED:
-      return "SORT_DIRECTION_UNSPECIFIED";
-    case SortDirection.SORT_DIRECTION_ASC:
-      return "SORT_DIRECTION_ASC";
-    case SortDirection.SORT_DIRECTION_DESC:
-      return "SORT_DIRECTION_DESC";
-    case SortDirection.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 export interface AddInventoryRequest {
   sku: string;
   name: string;
@@ -150,38 +41,6 @@ export interface BulkAddInventoryResponse {
   totalAdded: number;
 }
 
-export interface GetInventoryRequest {
-  sku: string;
-}
-
-export interface GetInventoryResponse {
-  sku: string;
-  name: string;
-  category: string;
-  stock: number;
-  price: number;
-  offerPrice?: number | undefined;
-}
-
-export interface ListInventoryRequest {
-  sku?: string | undefined;
-  name?: string | undefined;
-  category?: string | undefined;
-  stock?: number | undefined;
-  price?: number | undefined;
-  offerPrice?: number | undefined;
-  limit: number;
-  cursor: string;
-  sortField: InventorySortField;
-  sortDirection: SortDirection;
-}
-
-export interface ListInventoryResponse {
-  products: GetInventoryResponse[];
-  nextCursor: string;
-  hasNext: boolean;
-}
-
 export interface UpdateInventoryRequest {
   sku: string;
   stock?: number | undefined;
@@ -193,6 +52,89 @@ export interface UpdateInventoryRequest {
 
 export interface UpdateInventoryResponse {
   sku: string;
+}
+
+/**
+ * Stock Item CheckAvailabity
+ * Read-only.
+ * Does not create reservations.
+ * Not sufficient for order creation, because stock can change immediately after the check.
+ */
+export interface StockItem {
+  sku: string;
+  quantity: number;
+}
+
+export interface CheckAvailabilityRequest {
+  items: StockItem[];
+}
+
+export interface StockAvailability {
+  sku: string;
+  requestedQuantity: number;
+  availableStock: number;
+  isAvailable: boolean;
+}
+
+export interface CheckAvailabilityResponse {
+  isAvailable: boolean;
+  items: StockAvailability[];
+}
+
+export interface ReserveStockRequest {
+  orderId: string;
+  items: StockItem[];
+}
+
+export interface ReserveStockItem {
+  sku: string;
+  quantity: number;
+  /** maps to price */
+  unitPrice: number;
+  /** maps to offerPrice */
+  offerPrice?: number | undefined;
+  remainingStock: number;
+  version: number;
+}
+
+export interface ReserveStockResponse {
+  orderId: string;
+  success: boolean;
+  items: ReserveStockItem[];
+  reason: string;
+}
+
+export interface ReleaseReservationRequest {
+  orderId: string;
+  skus: string[];
+  reason: string;
+}
+
+export interface ReleasedStockItem {
+  sku: string;
+  quantity: number;
+  restoredStock: number;
+  version: number;
+}
+
+export interface ReleaseReservationResponse {
+  orderId: string;
+  releasedItems: ReleasedStockItem[];
+}
+
+export interface ConfirmReservationRequest {
+  orderId: string;
+  skus: string[];
+}
+
+export interface ConfirmedStockItem {
+  sku: string;
+  quantity: number;
+}
+
+export interface ConfirmReservationResponse {
+  orderId: string;
+  items: ConfirmedStockItem[];
 }
 
 function createBaseAddInventoryRequest(): AddInventoryRequest {
@@ -533,513 +475,6 @@ export const BulkAddInventoryResponse: MessageFns<BulkAddInventoryResponse> = {
   },
 };
 
-function createBaseGetInventoryRequest(): GetInventoryRequest {
-  return { sku: "" };
-}
-
-export const GetInventoryRequest: MessageFns<GetInventoryRequest> = {
-  encode(message: GetInventoryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.sku !== "") {
-      writer.uint32(10).string(message.sku);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): GetInventoryRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGetInventoryRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.sku = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): GetInventoryRequest {
-    return { sku: isSet(object.sku) ? globalThis.String(object.sku) : "" };
-  },
-
-  toJSON(message: GetInventoryRequest): unknown {
-    const obj: any = {};
-    if (message.sku !== "") {
-      obj.sku = message.sku;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetInventoryRequest>, I>>(base?: I): GetInventoryRequest {
-    return GetInventoryRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetInventoryRequest>, I>>(object: I): GetInventoryRequest {
-    const message = createBaseGetInventoryRequest();
-    message.sku = object.sku ?? "";
-    return message;
-  },
-};
-
-function createBaseGetInventoryResponse(): GetInventoryResponse {
-  return { sku: "", name: "", category: "", stock: 0, price: 0, offerPrice: undefined };
-}
-
-export const GetInventoryResponse: MessageFns<GetInventoryResponse> = {
-  encode(message: GetInventoryResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.sku !== "") {
-      writer.uint32(10).string(message.sku);
-    }
-    if (message.name !== "") {
-      writer.uint32(18).string(message.name);
-    }
-    if (message.category !== "") {
-      writer.uint32(26).string(message.category);
-    }
-    if (message.stock !== 0) {
-      writer.uint32(32).int32(message.stock);
-    }
-    if (message.price !== 0) {
-      writer.uint32(45).float(message.price);
-    }
-    if (message.offerPrice !== undefined) {
-      writer.uint32(53).float(message.offerPrice);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): GetInventoryResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGetInventoryResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.sku = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.name = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.category = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 32) {
-            break;
-          }
-
-          message.stock = reader.int32();
-          continue;
-        }
-        case 5: {
-          if (tag !== 45) {
-            break;
-          }
-
-          message.price = reader.float();
-          continue;
-        }
-        case 6: {
-          if (tag !== 53) {
-            break;
-          }
-
-          message.offerPrice = reader.float();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): GetInventoryResponse {
-    return {
-      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      category: isSet(object.category) ? globalThis.String(object.category) : "",
-      stock: isSet(object.stock) ? globalThis.Number(object.stock) : 0,
-      price: isSet(object.price) ? globalThis.Number(object.price) : 0,
-      offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
-    };
-  },
-
-  toJSON(message: GetInventoryResponse): unknown {
-    const obj: any = {};
-    if (message.sku !== "") {
-      obj.sku = message.sku;
-    }
-    if (message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.category !== "") {
-      obj.category = message.category;
-    }
-    if (message.stock !== 0) {
-      obj.stock = Math.round(message.stock);
-    }
-    if (message.price !== 0) {
-      obj.price = message.price;
-    }
-    if (message.offerPrice !== undefined) {
-      obj.offerPrice = message.offerPrice;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetInventoryResponse>, I>>(base?: I): GetInventoryResponse {
-    return GetInventoryResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetInventoryResponse>, I>>(object: I): GetInventoryResponse {
-    const message = createBaseGetInventoryResponse();
-    message.sku = object.sku ?? "";
-    message.name = object.name ?? "";
-    message.category = object.category ?? "";
-    message.stock = object.stock ?? 0;
-    message.price = object.price ?? 0;
-    message.offerPrice = object.offerPrice ?? undefined;
-    return message;
-  },
-};
-
-function createBaseListInventoryRequest(): ListInventoryRequest {
-  return {
-    sku: undefined,
-    name: undefined,
-    category: undefined,
-    stock: undefined,
-    price: undefined,
-    offerPrice: undefined,
-    limit: 0,
-    cursor: "",
-    sortField: 0,
-    sortDirection: 0,
-  };
-}
-
-export const ListInventoryRequest: MessageFns<ListInventoryRequest> = {
-  encode(message: ListInventoryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.sku !== undefined) {
-      writer.uint32(10).string(message.sku);
-    }
-    if (message.name !== undefined) {
-      writer.uint32(18).string(message.name);
-    }
-    if (message.category !== undefined) {
-      writer.uint32(26).string(message.category);
-    }
-    if (message.stock !== undefined) {
-      writer.uint32(32).int32(message.stock);
-    }
-    if (message.price !== undefined) {
-      writer.uint32(45).float(message.price);
-    }
-    if (message.offerPrice !== undefined) {
-      writer.uint32(53).float(message.offerPrice);
-    }
-    if (message.limit !== 0) {
-      writer.uint32(56).int32(message.limit);
-    }
-    if (message.cursor !== "") {
-      writer.uint32(66).string(message.cursor);
-    }
-    if (message.sortField !== 0) {
-      writer.uint32(72).int32(message.sortField);
-    }
-    if (message.sortDirection !== 0) {
-      writer.uint32(80).int32(message.sortDirection);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): ListInventoryRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseListInventoryRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.sku = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.name = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.category = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 32) {
-            break;
-          }
-
-          message.stock = reader.int32();
-          continue;
-        }
-        case 5: {
-          if (tag !== 45) {
-            break;
-          }
-
-          message.price = reader.float();
-          continue;
-        }
-        case 6: {
-          if (tag !== 53) {
-            break;
-          }
-
-          message.offerPrice = reader.float();
-          continue;
-        }
-        case 7: {
-          if (tag !== 56) {
-            break;
-          }
-
-          message.limit = reader.int32();
-          continue;
-        }
-        case 8: {
-          if (tag !== 66) {
-            break;
-          }
-
-          message.cursor = reader.string();
-          continue;
-        }
-        case 9: {
-          if (tag !== 72) {
-            break;
-          }
-
-          message.sortField = reader.int32() as any;
-          continue;
-        }
-        case 10: {
-          if (tag !== 80) {
-            break;
-          }
-
-          message.sortDirection = reader.int32() as any;
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ListInventoryRequest {
-    return {
-      sku: isSet(object.sku) ? globalThis.String(object.sku) : undefined,
-      name: isSet(object.name) ? globalThis.String(object.name) : undefined,
-      category: isSet(object.category) ? globalThis.String(object.category) : undefined,
-      stock: isSet(object.stock) ? globalThis.Number(object.stock) : undefined,
-      price: isSet(object.price) ? globalThis.Number(object.price) : undefined,
-      offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
-      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
-      cursor: isSet(object.cursor) ? globalThis.String(object.cursor) : "",
-      sortField: isSet(object.sortField) ? inventorySortFieldFromJSON(object.sortField) : 0,
-      sortDirection: isSet(object.sortDirection) ? sortDirectionFromJSON(object.sortDirection) : 0,
-    };
-  },
-
-  toJSON(message: ListInventoryRequest): unknown {
-    const obj: any = {};
-    if (message.sku !== undefined) {
-      obj.sku = message.sku;
-    }
-    if (message.name !== undefined) {
-      obj.name = message.name;
-    }
-    if (message.category !== undefined) {
-      obj.category = message.category;
-    }
-    if (message.stock !== undefined) {
-      obj.stock = Math.round(message.stock);
-    }
-    if (message.price !== undefined) {
-      obj.price = message.price;
-    }
-    if (message.offerPrice !== undefined) {
-      obj.offerPrice = message.offerPrice;
-    }
-    if (message.limit !== 0) {
-      obj.limit = Math.round(message.limit);
-    }
-    if (message.cursor !== "") {
-      obj.cursor = message.cursor;
-    }
-    if (message.sortField !== 0) {
-      obj.sortField = inventorySortFieldToJSON(message.sortField);
-    }
-    if (message.sortDirection !== 0) {
-      obj.sortDirection = sortDirectionToJSON(message.sortDirection);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ListInventoryRequest>, I>>(base?: I): ListInventoryRequest {
-    return ListInventoryRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ListInventoryRequest>, I>>(object: I): ListInventoryRequest {
-    const message = createBaseListInventoryRequest();
-    message.sku = object.sku ?? undefined;
-    message.name = object.name ?? undefined;
-    message.category = object.category ?? undefined;
-    message.stock = object.stock ?? undefined;
-    message.price = object.price ?? undefined;
-    message.offerPrice = object.offerPrice ?? undefined;
-    message.limit = object.limit ?? 0;
-    message.cursor = object.cursor ?? "";
-    message.sortField = object.sortField ?? 0;
-    message.sortDirection = object.sortDirection ?? 0;
-    return message;
-  },
-};
-
-function createBaseListInventoryResponse(): ListInventoryResponse {
-  return { products: [], nextCursor: "", hasNext: false };
-}
-
-export const ListInventoryResponse: MessageFns<ListInventoryResponse> = {
-  encode(message: ListInventoryResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.products) {
-      GetInventoryResponse.encode(v!, writer.uint32(10).fork()).join();
-    }
-    if (message.nextCursor !== "") {
-      writer.uint32(18).string(message.nextCursor);
-    }
-    if (message.hasNext !== false) {
-      writer.uint32(24).bool(message.hasNext);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): ListInventoryResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseListInventoryResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.products.push(GetInventoryResponse.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.nextCursor = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 24) {
-            break;
-          }
-
-          message.hasNext = reader.bool();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ListInventoryResponse {
-    return {
-      products: globalThis.Array.isArray(object?.products)
-        ? object.products.map((e: any) => GetInventoryResponse.fromJSON(e))
-        : [],
-      nextCursor: isSet(object.nextCursor) ? globalThis.String(object.nextCursor) : "",
-      hasNext: isSet(object.hasNext) ? globalThis.Boolean(object.hasNext) : false,
-    };
-  },
-
-  toJSON(message: ListInventoryResponse): unknown {
-    const obj: any = {};
-    if (message.products?.length) {
-      obj.products = message.products.map((e) => GetInventoryResponse.toJSON(e));
-    }
-    if (message.nextCursor !== "") {
-      obj.nextCursor = message.nextCursor;
-    }
-    if (message.hasNext !== false) {
-      obj.hasNext = message.hasNext;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ListInventoryResponse>, I>>(base?: I): ListInventoryResponse {
-    return ListInventoryResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ListInventoryResponse>, I>>(object: I): ListInventoryResponse {
-    const message = createBaseListInventoryResponse();
-    message.products = object.products?.map((e) => GetInventoryResponse.fromPartial(e)) || [];
-    message.nextCursor = object.nextCursor ?? "";
-    message.hasNext = object.hasNext ?? false;
-    return message;
-  },
-};
-
 function createBaseUpdateInventoryRequest(): UpdateInventoryRequest {
   return { sku: "", stock: undefined, price: undefined, offerPrice: undefined, name: undefined, category: undefined };
 }
@@ -1238,6 +673,1158 @@ export const UpdateInventoryResponse: MessageFns<UpdateInventoryResponse> = {
   },
 };
 
+function createBaseStockItem(): StockItem {
+  return { sku: "", quantity: 0 };
+}
+
+export const StockItem: MessageFns<StockItem> = {
+  encode(message: StockItem, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
+    }
+    if (message.quantity !== 0) {
+      writer.uint32(16).int32(message.quantity);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): StockItem {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseStockItem();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sku = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.quantity = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): StockItem {
+    return {
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+    };
+  },
+
+  toJSON(message: StockItem): unknown {
+    const obj: any = {};
+    if (message.sku !== "") {
+      obj.sku = message.sku;
+    }
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<StockItem>, I>>(base?: I): StockItem {
+    return StockItem.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<StockItem>, I>>(object: I): StockItem {
+    const message = createBaseStockItem();
+    message.sku = object.sku ?? "";
+    message.quantity = object.quantity ?? 0;
+    return message;
+  },
+};
+
+function createBaseCheckAvailabilityRequest(): CheckAvailabilityRequest {
+  return { items: [] };
+}
+
+export const CheckAvailabilityRequest: MessageFns<CheckAvailabilityRequest> = {
+  encode(message: CheckAvailabilityRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.items) {
+      StockItem.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckAvailabilityRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckAvailabilityRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.items.push(StockItem.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CheckAvailabilityRequest {
+    return {
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => StockItem.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: CheckAvailabilityRequest): unknown {
+    const obj: any = {};
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => StockItem.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CheckAvailabilityRequest>, I>>(base?: I): CheckAvailabilityRequest {
+    return CheckAvailabilityRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckAvailabilityRequest>, I>>(object: I): CheckAvailabilityRequest {
+    const message = createBaseCheckAvailabilityRequest();
+    message.items = object.items?.map((e) => StockItem.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseStockAvailability(): StockAvailability {
+  return { sku: "", requestedQuantity: 0, availableStock: 0, isAvailable: false };
+}
+
+export const StockAvailability: MessageFns<StockAvailability> = {
+  encode(message: StockAvailability, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
+    }
+    if (message.requestedQuantity !== 0) {
+      writer.uint32(16).int32(message.requestedQuantity);
+    }
+    if (message.availableStock !== 0) {
+      writer.uint32(24).int32(message.availableStock);
+    }
+    if (message.isAvailable !== false) {
+      writer.uint32(32).bool(message.isAvailable);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): StockAvailability {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseStockAvailability();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sku = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.requestedQuantity = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.availableStock = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.isAvailable = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): StockAvailability {
+    return {
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
+      requestedQuantity: isSet(object.requestedQuantity) ? globalThis.Number(object.requestedQuantity) : 0,
+      availableStock: isSet(object.availableStock) ? globalThis.Number(object.availableStock) : 0,
+      isAvailable: isSet(object.isAvailable) ? globalThis.Boolean(object.isAvailable) : false,
+    };
+  },
+
+  toJSON(message: StockAvailability): unknown {
+    const obj: any = {};
+    if (message.sku !== "") {
+      obj.sku = message.sku;
+    }
+    if (message.requestedQuantity !== 0) {
+      obj.requestedQuantity = Math.round(message.requestedQuantity);
+    }
+    if (message.availableStock !== 0) {
+      obj.availableStock = Math.round(message.availableStock);
+    }
+    if (message.isAvailable !== false) {
+      obj.isAvailable = message.isAvailable;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<StockAvailability>, I>>(base?: I): StockAvailability {
+    return StockAvailability.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<StockAvailability>, I>>(object: I): StockAvailability {
+    const message = createBaseStockAvailability();
+    message.sku = object.sku ?? "";
+    message.requestedQuantity = object.requestedQuantity ?? 0;
+    message.availableStock = object.availableStock ?? 0;
+    message.isAvailable = object.isAvailable ?? false;
+    return message;
+  },
+};
+
+function createBaseCheckAvailabilityResponse(): CheckAvailabilityResponse {
+  return { isAvailable: false, items: [] };
+}
+
+export const CheckAvailabilityResponse: MessageFns<CheckAvailabilityResponse> = {
+  encode(message: CheckAvailabilityResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.isAvailable !== false) {
+      writer.uint32(8).bool(message.isAvailable);
+    }
+    for (const v of message.items) {
+      StockAvailability.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckAvailabilityResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckAvailabilityResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.isAvailable = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.items.push(StockAvailability.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CheckAvailabilityResponse {
+    return {
+      isAvailable: isSet(object.isAvailable) ? globalThis.Boolean(object.isAvailable) : false,
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => StockAvailability.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: CheckAvailabilityResponse): unknown {
+    const obj: any = {};
+    if (message.isAvailable !== false) {
+      obj.isAvailable = message.isAvailable;
+    }
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => StockAvailability.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CheckAvailabilityResponse>, I>>(base?: I): CheckAvailabilityResponse {
+    return CheckAvailabilityResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckAvailabilityResponse>, I>>(object: I): CheckAvailabilityResponse {
+    const message = createBaseCheckAvailabilityResponse();
+    message.isAvailable = object.isAvailable ?? false;
+    message.items = object.items?.map((e) => StockAvailability.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseReserveStockRequest(): ReserveStockRequest {
+  return { orderId: "", items: [] };
+}
+
+export const ReserveStockRequest: MessageFns<ReserveStockRequest> = {
+  encode(message: ReserveStockRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    for (const v of message.items) {
+      StockItem.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReserveStockRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReserveStockRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.items.push(StockItem.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReserveStockRequest {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => StockItem.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: ReserveStockRequest): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => StockItem.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ReserveStockRequest>, I>>(base?: I): ReserveStockRequest {
+    return ReserveStockRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ReserveStockRequest>, I>>(object: I): ReserveStockRequest {
+    const message = createBaseReserveStockRequest();
+    message.orderId = object.orderId ?? "";
+    message.items = object.items?.map((e) => StockItem.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseReserveStockItem(): ReserveStockItem {
+  return { sku: "", quantity: 0, unitPrice: 0, offerPrice: undefined, remainingStock: 0, version: 0 };
+}
+
+export const ReserveStockItem: MessageFns<ReserveStockItem> = {
+  encode(message: ReserveStockItem, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
+    }
+    if (message.quantity !== 0) {
+      writer.uint32(16).int32(message.quantity);
+    }
+    if (message.unitPrice !== 0) {
+      writer.uint32(29).float(message.unitPrice);
+    }
+    if (message.offerPrice !== undefined) {
+      writer.uint32(37).float(message.offerPrice);
+    }
+    if (message.remainingStock !== 0) {
+      writer.uint32(40).int32(message.remainingStock);
+    }
+    if (message.version !== 0) {
+      writer.uint32(48).int32(message.version);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReserveStockItem {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReserveStockItem();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sku = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.quantity = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 29) {
+            break;
+          }
+
+          message.unitPrice = reader.float();
+          continue;
+        }
+        case 4: {
+          if (tag !== 37) {
+            break;
+          }
+
+          message.offerPrice = reader.float();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.remainingStock = reader.int32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.version = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReserveStockItem {
+    return {
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+      unitPrice: isSet(object.unitPrice) ? globalThis.Number(object.unitPrice) : 0,
+      offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
+      remainingStock: isSet(object.remainingStock) ? globalThis.Number(object.remainingStock) : 0,
+      version: isSet(object.version) ? globalThis.Number(object.version) : 0,
+    };
+  },
+
+  toJSON(message: ReserveStockItem): unknown {
+    const obj: any = {};
+    if (message.sku !== "") {
+      obj.sku = message.sku;
+    }
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
+    }
+    if (message.unitPrice !== 0) {
+      obj.unitPrice = message.unitPrice;
+    }
+    if (message.offerPrice !== undefined) {
+      obj.offerPrice = message.offerPrice;
+    }
+    if (message.remainingStock !== 0) {
+      obj.remainingStock = Math.round(message.remainingStock);
+    }
+    if (message.version !== 0) {
+      obj.version = Math.round(message.version);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ReserveStockItem>, I>>(base?: I): ReserveStockItem {
+    return ReserveStockItem.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ReserveStockItem>, I>>(object: I): ReserveStockItem {
+    const message = createBaseReserveStockItem();
+    message.sku = object.sku ?? "";
+    message.quantity = object.quantity ?? 0;
+    message.unitPrice = object.unitPrice ?? 0;
+    message.offerPrice = object.offerPrice ?? undefined;
+    message.remainingStock = object.remainingStock ?? 0;
+    message.version = object.version ?? 0;
+    return message;
+  },
+};
+
+function createBaseReserveStockResponse(): ReserveStockResponse {
+  return { orderId: "", success: false, items: [], reason: "" };
+}
+
+export const ReserveStockResponse: MessageFns<ReserveStockResponse> = {
+  encode(message: ReserveStockResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    if (message.success !== false) {
+      writer.uint32(16).bool(message.success);
+    }
+    for (const v of message.items) {
+      ReserveStockItem.encode(v!, writer.uint32(26).fork()).join();
+    }
+    if (message.reason !== "") {
+      writer.uint32(34).string(message.reason);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReserveStockResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReserveStockResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.items.push(ReserveStockItem.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.reason = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReserveStockResponse {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      success: isSet(object.success) ? globalThis.Boolean(object.success) : false,
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => ReserveStockItem.fromJSON(e)) : [],
+      reason: isSet(object.reason) ? globalThis.String(object.reason) : "",
+    };
+  },
+
+  toJSON(message: ReserveStockResponse): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.success !== false) {
+      obj.success = message.success;
+    }
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => ReserveStockItem.toJSON(e));
+    }
+    if (message.reason !== "") {
+      obj.reason = message.reason;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ReserveStockResponse>, I>>(base?: I): ReserveStockResponse {
+    return ReserveStockResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ReserveStockResponse>, I>>(object: I): ReserveStockResponse {
+    const message = createBaseReserveStockResponse();
+    message.orderId = object.orderId ?? "";
+    message.success = object.success ?? false;
+    message.items = object.items?.map((e) => ReserveStockItem.fromPartial(e)) || [];
+    message.reason = object.reason ?? "";
+    return message;
+  },
+};
+
+function createBaseReleaseReservationRequest(): ReleaseReservationRequest {
+  return { orderId: "", skus: [], reason: "" };
+}
+
+export const ReleaseReservationRequest: MessageFns<ReleaseReservationRequest> = {
+  encode(message: ReleaseReservationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    for (const v of message.skus) {
+      writer.uint32(18).string(v!);
+    }
+    if (message.reason !== "") {
+      writer.uint32(26).string(message.reason);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReleaseReservationRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReleaseReservationRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.skus.push(reader.string());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.reason = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReleaseReservationRequest {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      skus: globalThis.Array.isArray(object?.skus) ? object.skus.map((e: any) => globalThis.String(e)) : [],
+      reason: isSet(object.reason) ? globalThis.String(object.reason) : "",
+    };
+  },
+
+  toJSON(message: ReleaseReservationRequest): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.skus?.length) {
+      obj.skus = message.skus;
+    }
+    if (message.reason !== "") {
+      obj.reason = message.reason;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ReleaseReservationRequest>, I>>(base?: I): ReleaseReservationRequest {
+    return ReleaseReservationRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ReleaseReservationRequest>, I>>(object: I): ReleaseReservationRequest {
+    const message = createBaseReleaseReservationRequest();
+    message.orderId = object.orderId ?? "";
+    message.skus = object.skus?.map((e) => e) || [];
+    message.reason = object.reason ?? "";
+    return message;
+  },
+};
+
+function createBaseReleasedStockItem(): ReleasedStockItem {
+  return { sku: "", quantity: 0, restoredStock: 0, version: 0 };
+}
+
+export const ReleasedStockItem: MessageFns<ReleasedStockItem> = {
+  encode(message: ReleasedStockItem, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
+    }
+    if (message.quantity !== 0) {
+      writer.uint32(16).int32(message.quantity);
+    }
+    if (message.restoredStock !== 0) {
+      writer.uint32(24).int32(message.restoredStock);
+    }
+    if (message.version !== 0) {
+      writer.uint32(32).int32(message.version);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReleasedStockItem {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReleasedStockItem();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sku = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.quantity = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.restoredStock = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.version = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReleasedStockItem {
+    return {
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+      restoredStock: isSet(object.restoredStock) ? globalThis.Number(object.restoredStock) : 0,
+      version: isSet(object.version) ? globalThis.Number(object.version) : 0,
+    };
+  },
+
+  toJSON(message: ReleasedStockItem): unknown {
+    const obj: any = {};
+    if (message.sku !== "") {
+      obj.sku = message.sku;
+    }
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
+    }
+    if (message.restoredStock !== 0) {
+      obj.restoredStock = Math.round(message.restoredStock);
+    }
+    if (message.version !== 0) {
+      obj.version = Math.round(message.version);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ReleasedStockItem>, I>>(base?: I): ReleasedStockItem {
+    return ReleasedStockItem.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ReleasedStockItem>, I>>(object: I): ReleasedStockItem {
+    const message = createBaseReleasedStockItem();
+    message.sku = object.sku ?? "";
+    message.quantity = object.quantity ?? 0;
+    message.restoredStock = object.restoredStock ?? 0;
+    message.version = object.version ?? 0;
+    return message;
+  },
+};
+
+function createBaseReleaseReservationResponse(): ReleaseReservationResponse {
+  return { orderId: "", releasedItems: [] };
+}
+
+export const ReleaseReservationResponse: MessageFns<ReleaseReservationResponse> = {
+  encode(message: ReleaseReservationResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    for (const v of message.releasedItems) {
+      ReleasedStockItem.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReleaseReservationResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReleaseReservationResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.releasedItems.push(ReleasedStockItem.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReleaseReservationResponse {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      releasedItems: globalThis.Array.isArray(object?.releasedItems)
+        ? object.releasedItems.map((e: any) => ReleasedStockItem.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ReleaseReservationResponse): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.releasedItems?.length) {
+      obj.releasedItems = message.releasedItems.map((e) => ReleasedStockItem.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ReleaseReservationResponse>, I>>(base?: I): ReleaseReservationResponse {
+    return ReleaseReservationResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ReleaseReservationResponse>, I>>(object: I): ReleaseReservationResponse {
+    const message = createBaseReleaseReservationResponse();
+    message.orderId = object.orderId ?? "";
+    message.releasedItems = object.releasedItems?.map((e) => ReleasedStockItem.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseConfirmReservationRequest(): ConfirmReservationRequest {
+  return { orderId: "", skus: [] };
+}
+
+export const ConfirmReservationRequest: MessageFns<ConfirmReservationRequest> = {
+  encode(message: ConfirmReservationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    for (const v of message.skus) {
+      writer.uint32(18).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConfirmReservationRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConfirmReservationRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.skus.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ConfirmReservationRequest {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      skus: globalThis.Array.isArray(object?.skus) ? object.skus.map((e: any) => globalThis.String(e)) : [],
+    };
+  },
+
+  toJSON(message: ConfirmReservationRequest): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.skus?.length) {
+      obj.skus = message.skus;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ConfirmReservationRequest>, I>>(base?: I): ConfirmReservationRequest {
+    return ConfirmReservationRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ConfirmReservationRequest>, I>>(object: I): ConfirmReservationRequest {
+    const message = createBaseConfirmReservationRequest();
+    message.orderId = object.orderId ?? "";
+    message.skus = object.skus?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseConfirmedStockItem(): ConfirmedStockItem {
+  return { sku: "", quantity: 0 };
+}
+
+export const ConfirmedStockItem: MessageFns<ConfirmedStockItem> = {
+  encode(message: ConfirmedStockItem, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
+    }
+    if (message.quantity !== 0) {
+      writer.uint32(16).int32(message.quantity);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConfirmedStockItem {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConfirmedStockItem();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sku = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.quantity = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ConfirmedStockItem {
+    return {
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+    };
+  },
+
+  toJSON(message: ConfirmedStockItem): unknown {
+    const obj: any = {};
+    if (message.sku !== "") {
+      obj.sku = message.sku;
+    }
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ConfirmedStockItem>, I>>(base?: I): ConfirmedStockItem {
+    return ConfirmedStockItem.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ConfirmedStockItem>, I>>(object: I): ConfirmedStockItem {
+    const message = createBaseConfirmedStockItem();
+    message.sku = object.sku ?? "";
+    message.quantity = object.quantity ?? 0;
+    return message;
+  },
+};
+
+function createBaseConfirmReservationResponse(): ConfirmReservationResponse {
+  return { orderId: "", items: [] };
+}
+
+export const ConfirmReservationResponse: MessageFns<ConfirmReservationResponse> = {
+  encode(message: ConfirmReservationResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    for (const v of message.items) {
+      ConfirmedStockItem.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConfirmReservationResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConfirmReservationResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.items.push(ConfirmedStockItem.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ConfirmReservationResponse {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      items: globalThis.Array.isArray(object?.items)
+        ? object.items.map((e: any) => ConfirmedStockItem.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ConfirmReservationResponse): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => ConfirmedStockItem.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ConfirmReservationResponse>, I>>(base?: I): ConfirmReservationResponse {
+    return ConfirmReservationResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ConfirmReservationResponse>, I>>(object: I): ConfirmReservationResponse {
+    const message = createBaseConfirmReservationResponse();
+    message.orderId = object.orderId ?? "";
+    message.items = object.items?.map((e) => ConfirmedStockItem.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 export type InventoryServiceService = typeof InventoryServiceService;
 export const InventoryServiceService = {
   addInventory: {
@@ -1272,12 +1859,67 @@ export const InventoryServiceService = {
       Buffer.from(UpdateInventoryResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): UpdateInventoryResponse => UpdateInventoryResponse.decode(value),
   },
+  checkAvailability: {
+    path: "/inventory.InventoryService/CheckAvailability" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CheckAvailabilityRequest): Buffer =>
+      Buffer.from(CheckAvailabilityRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CheckAvailabilityRequest => CheckAvailabilityRequest.decode(value),
+    responseSerialize: (value: CheckAvailabilityResponse): Buffer =>
+      Buffer.from(CheckAvailabilityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CheckAvailabilityResponse => CheckAvailabilityResponse.decode(value),
+  },
+  reserveStock: {
+    path: "/inventory.InventoryService/ReserveStock" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: ReserveStockRequest): Buffer => Buffer.from(ReserveStockRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ReserveStockRequest => ReserveStockRequest.decode(value),
+    responseSerialize: (value: ReserveStockResponse): Buffer =>
+      Buffer.from(ReserveStockResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ReserveStockResponse => ReserveStockResponse.decode(value),
+  },
+  releaseReservation: {
+    path: "/inventory.InventoryService/ReleaseReservation" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: ReleaseReservationRequest): Buffer =>
+      Buffer.from(ReleaseReservationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ReleaseReservationRequest => ReleaseReservationRequest.decode(value),
+    responseSerialize: (value: ReleaseReservationResponse): Buffer =>
+      Buffer.from(ReleaseReservationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ReleaseReservationResponse => ReleaseReservationResponse.decode(value),
+  },
+  /**
+   * rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
+   * rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse);
+   */
+  confirmReservation: {
+    path: "/inventory.InventoryService/ConfirmReservation" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: ConfirmReservationRequest): Buffer =>
+      Buffer.from(ConfirmReservationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ConfirmReservationRequest => ConfirmReservationRequest.decode(value),
+    responseSerialize: (value: ConfirmReservationResponse): Buffer =>
+      Buffer.from(ConfirmReservationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ConfirmReservationResponse => ConfirmReservationResponse.decode(value),
+  },
 } as const;
 
 export interface InventoryServiceServer extends UntypedServiceImplementation {
   addInventory: handleUnaryCall<AddInventoryRequest, AddInventoryResponse>;
   bulkAddInventory: handleUnaryCall<BulkAddInventoryRequest, BulkAddInventoryResponse>;
   updateInventory: handleUnaryCall<UpdateInventoryRequest, UpdateInventoryResponse>;
+  checkAvailability: handleUnaryCall<CheckAvailabilityRequest, CheckAvailabilityResponse>;
+  reserveStock: handleUnaryCall<ReserveStockRequest, ReserveStockResponse>;
+  releaseReservation: handleUnaryCall<ReleaseReservationRequest, ReleaseReservationResponse>;
+  /**
+   * rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
+   * rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse);
+   */
+  confirmReservation: handleUnaryCall<ConfirmReservationRequest, ConfirmReservationResponse>;
 }
 
 export interface InventoryServiceClient extends Client {
@@ -1325,6 +1967,70 @@ export interface InventoryServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: UpdateInventoryResponse) => void,
+  ): ClientUnaryCall;
+  checkAvailability(
+    request: CheckAvailabilityRequest,
+    callback: (error: ServiceError | null, response: CheckAvailabilityResponse) => void,
+  ): ClientUnaryCall;
+  checkAvailability(
+    request: CheckAvailabilityRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CheckAvailabilityResponse) => void,
+  ): ClientUnaryCall;
+  checkAvailability(
+    request: CheckAvailabilityRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CheckAvailabilityResponse) => void,
+  ): ClientUnaryCall;
+  reserveStock(
+    request: ReserveStockRequest,
+    callback: (error: ServiceError | null, response: ReserveStockResponse) => void,
+  ): ClientUnaryCall;
+  reserveStock(
+    request: ReserveStockRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ReserveStockResponse) => void,
+  ): ClientUnaryCall;
+  reserveStock(
+    request: ReserveStockRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ReserveStockResponse) => void,
+  ): ClientUnaryCall;
+  releaseReservation(
+    request: ReleaseReservationRequest,
+    callback: (error: ServiceError | null, response: ReleaseReservationResponse) => void,
+  ): ClientUnaryCall;
+  releaseReservation(
+    request: ReleaseReservationRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ReleaseReservationResponse) => void,
+  ): ClientUnaryCall;
+  releaseReservation(
+    request: ReleaseReservationRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ReleaseReservationResponse) => void,
+  ): ClientUnaryCall;
+  /**
+   * rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
+   * rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse);
+   */
+  confirmReservation(
+    request: ConfirmReservationRequest,
+    callback: (error: ServiceError | null, response: ConfirmReservationResponse) => void,
+  ): ClientUnaryCall;
+  confirmReservation(
+    request: ConfirmReservationRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ConfirmReservationResponse) => void,
+  ): ClientUnaryCall;
+  confirmReservation(
+    request: ConfirmReservationRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ConfirmReservationResponse) => void,
   ): ClientUnaryCall;
 }
 

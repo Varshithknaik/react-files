@@ -7,6 +7,7 @@ import {
 import {
   addInventoryDomainSchema,
   bulkAddInventoryDomainSchema,
+  checkAvailabilityDomainSchema,
   updateInventoryDomainSchema,
 } from '../schema/inventory.schema.js'
 import { toGrpcError } from '../lib/grpc-error.js'
@@ -63,4 +64,13 @@ export const InventoryService: InventoryServiceServer = {
       callback(grpcError, null as never)
     }
   },
+  async checkAvailability(call, callback) {
+    const payload = checkAvailabilityDomainSchema.safeParse(call.request)
+    if (!payload.success) {
+      return callback(payload.error, null)
+    }
+  },
+  async reserveStock() {},
+  async releaseReservation() {},
+  async confirmReservation() {},
 }

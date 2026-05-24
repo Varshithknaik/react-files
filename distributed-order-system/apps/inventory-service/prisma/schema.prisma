@@ -67,7 +67,6 @@ model outBoxEvent {
   eventType     String       @map("event_type")
   topic         String
   payload       Json
-  headers       Json?
   status        OutboxStatus @default(PENDING)
   attempt       Int          @default(0)
   nextAttemptAt DateTime     @default(now()) @map("next_attempt_at")

@@ -7,13 +7,15 @@ service InventoryService {
   rpc BulkAddInventory (BulkAddInventoryRequest) returns (BulkAddInventoryResponse);
   rpc UpdateInventory  (UpdateInventoryRequest) returns (UpdateInventoryResponse);
 
-  // rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse);
+  rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse);
+  rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+  rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse);
   // rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
   // rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse);
 
   // rpc GetReservation(GetReservationRequest) returns (ReservationResponse);
   // rpc ListReservations(ListReservationsRequest) returns (ListReservationsResponse);
-  // rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
   // rpc CleanupZombieReservations(CleanupZombieReservationsRequest) returns (CleanupZombieReservationsResponse);
 }
 
@@ -39,58 +41,6 @@ message BulkAddInventoryResponse{
   int32 totalAdded = 2;
 }
 
-message GetInventoryRequest{
-  string sku = 1;
-}
-
-message GetInventoryResponse{
-  string sku = 1;
-  string name = 2;
-  string category = 3;
-  int32 stock = 4;
-  float price = 5;
-  optional float offerPrice = 6;
-}
-
-// TODO: requires paginations and sorting and some patch work
-enum InventorySortField {
-  INVENTORY_SORT_FIELD_UNSPECIFIED = 0;
-  INVENTORY_SORT_FIELD_SKU = 1;
-  INVENTORY_SORT_FIELD_NAME = 2;
-  INVENTORY_SORT_FIELD_CATEGORY = 3;
-  INVENTORY_SORT_FIELD_STOCK = 4;
-  INVENTORY_SORT_FIELD_PRICE = 5;
-  INVENTORY_SORT_FIELD_OFFER_PRICE = 6;
-  INVENTORY_SORT_FIELD_CREATED_AT = 7;
-}
-
-enum SortDirection {
-  SORT_DIRECTION_UNSPECIFIED = 0;
-  SORT_DIRECTION_ASC = 1;
-  SORT_DIRECTION_DESC = 2;
-}
-
-
-message ListInventoryRequest{
-  optional string sku = 1;
-  optional string name = 2;
-  optional string category = 3;
-  optional int32 stock = 4;
-  optional float price = 5;
-  optional float offerPrice = 6;
-
-  int32 limit = 7;
-  string cursor = 8;
-  InventorySortField sortField = 9;
-  SortDirection sortDirection = 10;
-}
-
-message ListInventoryResponse{
-  repeated GetInventoryResponse products = 1;
-  string nextCursor = 2;
-  bool hasNext = 3;
-}
-
 message UpdateInventoryRequest{
   string sku = 1;
   optional int32 stock = 2;
@@ -103,3 +53,82 @@ message UpdateInventoryRequest{
 message UpdateInventoryResponse{
   string sku = 1;
 }
+//Stock Item CheckAvailabity
+// Read-only.
+// Does not create reservations.
+// Not sufficient for order creation, because stock can change immediately after the check.
+message StockItem{
+  string sku = 1;
+  int32 quantity = 2;
+}
+
+message CheckAvailabilityRequest {
+  repeated StockItem items = 1;
+}
+
+message StockAvailability {
+  string sku = 1;
+  int32 requestedQuantity = 2;
+  int32 availableStock = 3;
+  bool isAvailable = 4;
+}
+
+message CheckAvailabilityResponse{
+  bool isAvailable = 1;
+  repeated StockAvailability items = 2;
+}
+
+message ReserveStockRequest{
+  string orderId = 1;
+  repeated StockItem items = 2;
+}
+
+message ReserveStockItem{
+  string sku = 1;
+  int32 quantity = 2;
+  float unitPrice = 3; // maps to price
+  optional float offerPrice = 4; // maps to offerPrice
+  int32 remainingStock = 5;
+  int32 version = 6;
+}
+
+message ReserveStockResponse{
+  string orderId = 1;
+  bool success = 2;
+  repeated ReserveStockItem items = 3;
+  string reason = 4;
+}
+
+message ReleaseReservationRequest{
+  string orderId = 1;
+  repeated string skus = 2;
+  string reason = 3;
+}
+
+message ReleasedStockItem {
+  string sku = 1;
+  int32 quantity = 2;
+  int32 restoredStock = 3;
+  int32 version = 4;
+}
+
+message ReleaseReservationResponse{
+  string orderId = 1;
+  repeated ReleasedStockItem releasedItems = 2;
+}
+
+message ConfirmReservationRequest{
+  string orderId = 1;
+  repeated string skus = 2;
+}
+
+message ConfirmedStockItem{
+  string sku = 1;
+  int32 quantity = 2;
+}
+
+message ConfirmReservationResponse{
+  string orderId = 1;
+  repeated ConfirmedStockItem items = 2;
+}
+  

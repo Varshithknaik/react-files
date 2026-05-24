@@ -136,8 +136,6 @@ export async function updateInventory(payload: UpdateInventoryInput) {
       },
     })
 
-    console.log('updated', updated)
-
     const envelope: EventEnvelope<InventoryProductUpdated> = {
       eventId: crypto.randomUUID(),
       eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
