@@ -1,9 +1,21 @@
 import { CreateOrderRequest, CreateOrderResponse } from '@core/proto'
+import { reserveStock } from '../grpc/clients.js'
 
 export async function createOrder(
   request: CreateOrderRequest
 ): Promise<CreateOrderResponse> {
-  console.log(request.userId)
+  const orderId = crypto.randomUUID()
+  const paylaod = {
+    orderId,
+    items: request.items.map((item) => ({
+      sku: item.productId,
+      quantity: item.quantity,
+    })),
+  }
+
+  const reservation = await reserveStock(paylaod)
+
+  console.log(reservation)
 
   return {
     orderId: '1',

@@ -23,7 +23,7 @@ model Users {
 }
 
 model Order {
-  id        String      @id @default(cuid())
+  id        String      @id @default(uuid())
   userId    String
   user      Users       @relation(fields: [userId], references: [id])
   status    OrderStatus @default(CONFIRMED)
@@ -34,7 +34,7 @@ model Order {
 }
 
 model OrderItem {
-  id                 String  @id @default(cuid())
+  id                 String  @id @default(uuid())
   orderId            String
   order              Order   @relation(fields: [orderId], references: [id])
   sku                String
