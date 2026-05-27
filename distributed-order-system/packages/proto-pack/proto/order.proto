@@ -13,7 +13,7 @@ message CreateOrderRequest{
 }
 
 message OrderItemInput{
-  string productId = 1;
+  string sku = 1;
   int32 quantity = 2;
 }
 

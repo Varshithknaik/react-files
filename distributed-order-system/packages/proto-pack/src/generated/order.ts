@@ -25,7 +25,7 @@ export interface CreateOrderRequest {
 }
 
 export interface OrderItemInput {
-  productId: string;
+  sku: string;
   quantity: number;
 }
 
@@ -112,13 +112,13 @@ export const CreateOrderRequest: MessageFns<CreateOrderRequest> = {
 };
 
 function createBaseOrderItemInput(): OrderItemInput {
-  return { productId: "", quantity: 0 };
+  return { sku: "", quantity: 0 };
 }
 
 export const OrderItemInput: MessageFns<OrderItemInput> = {
   encode(message: OrderItemInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.productId !== "") {
-      writer.uint32(10).string(message.productId);
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
     }
     if (message.quantity !== 0) {
       writer.uint32(16).int32(message.quantity);
@@ -138,7 +138,7 @@ export const OrderItemInput: MessageFns<OrderItemInput> = {
             break;
           }
 
-          message.productId = reader.string();
+          message.sku = reader.string();
           continue;
         }
         case 2: {
@@ -160,15 +160,15 @@ export const OrderItemInput: MessageFns<OrderItemInput> = {
 
   fromJSON(object: any): OrderItemInput {
     return {
-      productId: isSet(object.productId) ? globalThis.String(object.productId) : "",
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
       quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
     };
   },
 
   toJSON(message: OrderItemInput): unknown {
     const obj: any = {};
-    if (message.productId !== "") {
-      obj.productId = message.productId;
+    if (message.sku !== "") {
+      obj.sku = message.sku;
     }
     if (message.quantity !== 0) {
       obj.quantity = Math.round(message.quantity);
@@ -181,7 +181,7 @@ export const OrderItemInput: MessageFns<OrderItemInput> = {
   },
   fromPartial<I extends Exact<DeepPartial<OrderItemInput>, I>>(object: I): OrderItemInput {
     const message = createBaseOrderItemInput();
-    message.productId = object.productId ?? "";
+    message.sku = object.sku ?? "";
     message.quantity = object.quantity ?? 0;
     return message;
   },

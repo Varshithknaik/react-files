@@ -47,9 +47,20 @@ export const checkAvailabilityDomainSchema = z.object({
   ),
 })
 
+export const ReserveStockRequestSchema = z.object({
+  orderId: z.string().min(1),
+  items: z.array(
+    z.object({
+      sku: z.string().min(1),
+      quantity: z.number().int().min(1),
+    })
+  ),
+})
+
 export type AddInventoryInput = z.infer<typeof addInventoryDomainSchema>
 export type BulkAddInventoryInput = z.infer<typeof bulkAddInventoryDomainSchema>
 export type UpdateInventoryInput = z.infer<typeof updateInventoryDomainSchema>
 export type CheckAvailabilityInput = z.infer<
   typeof checkAvailabilityDomainSchema
 >
+export type ReserveStockRequestInput = z.infer<typeof ReserveStockRequestSchema>

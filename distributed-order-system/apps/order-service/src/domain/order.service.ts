@@ -8,7 +8,7 @@ export async function createOrder(
   const paylaod = {
     orderId,
     items: request.items.map((item) => ({
-      sku: item.productId,
+      sku: item.sku,
       quantity: item.quantity,
     })),
   }

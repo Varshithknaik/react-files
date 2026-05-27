@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { NextFunction, Request, Response } from 'express'
 import { sendError } from '../lib/http-response.js'
+import { AuthUser } from '../types/express.js'
 
 export const authMiddleware = (
   req: Request,
@@ -13,9 +14,12 @@ export const authMiddleware = (
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!)
-    req.user = decoded
+    if (typeof decoded === 'string') {
+      return sendError(res, 401, 'Invalid token')
+    }
+    req.user = decoded as AuthUser
     next()
-  } catch (error) {
+  } catch {
     return sendError(res, 401, 'Unauthorized')
   }
 }

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { publish } from '../events/produce.js'
 import { TOPICS, USER_EVENTS_TYPE, UserCreatedEvent } from '@core/events'
 import { createUserSchema, loginUserSchema } from '../schema/user.schema.js'
@@ -50,39 +50,36 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   }
 })
 
-authRouter.post(
-  '/login',
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body
+authRouter.post('/login', async (req: Request, res: Response) => {
+  const { email } = req.body
 
-    const result = loginUserSchema.safeParse({ email })
+  const result = loginUserSchema.safeParse({ email })
 
-    if (!result.success) {
-      return sendError(res, 400, 'Invalid request', result.error.flatten())
-    }
-
-    try {
-      const user = await prisma.users.findUnique({
-        where: {
-          email: result.data.email,
-        },
-      })
-
-      if (!user) {
-        return sendError(res, 404, 'User not found')
-      }
-
-      const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
-        expiresIn: '20m',
-      })
-      return sendSuccess(res, 200, 'Login successful', { token })
-    } catch (error) {
-      logger.error('Failed to login user', error)
-      return sendError(res, 500, 'Internal server error')
-    }
+  if (!result.success) {
+    return sendError(res, 400, 'Invalid request', result.error.flatten())
   }
-)
 
-authRouter.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await prisma.users.findUnique({
+      where: {
+        email: result.data.email,
+      },
+    })
+
+    if (!user) {
+      return sendError(res, 404, 'User not found')
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
+      expiresIn: '20m',
+    })
+    return sendSuccess(res, 200, 'Login successful', { token })
+  } catch (error) {
+    logger.error('Failed to login user', error)
+    return sendError(res, 500, 'Internal server error')
+  }
+})
+
+authRouter.get('/', async (req: Request, res: Response) => {
   return sendSuccess(res, 200, 'OK', null)
 })

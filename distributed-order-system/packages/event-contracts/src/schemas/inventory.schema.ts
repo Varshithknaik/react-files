@@ -39,6 +39,7 @@ export const InventoryStockReservedSchema = z.object({
       sku: z.string(),
       quantity: z.number(),
       remainingStock: z.number(),
+      version: z.number(),
     })
   ),
   reservedAt: z.string(),

@@ -5,6 +5,7 @@ import {
 } from '@core/proto'
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
 import { createOrderSchema } from '../schema/order.schema.js'
+import { createOrder } from '../domain/order.service.js'
 
 export const orderService: OrderServiceServer = {
   createOrder: async (
@@ -17,8 +18,8 @@ export const orderService: OrderServiceServer = {
         return callback(payload.error, null as never)
       }
 
-      // const response = await createOrder(payload.data)
-      // callback(null, response)
+      const response = await createOrder(payload.data)
+      callback(null, response)
     } catch (error) {
       callback(error as Error, null as never)
     }

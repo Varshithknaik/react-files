@@ -2,12 +2,14 @@ import { InventoryServiceServer } from 'packages/proto-pack/dist/index.js'
 import {
   addInventory,
   bulkAddInventory,
+  reserveStock,
   updateInventory,
 } from '../reporitory/inventory.repository.js'
 import {
   addInventoryDomainSchema,
   bulkAddInventoryDomainSchema,
   checkAvailabilityDomainSchema,
+  ReserveStockRequestSchema,
   updateInventoryDomainSchema,
 } from '../schema/inventory.schema.js'
 import { toGrpcError } from '../lib/grpc-error.js'
@@ -70,7 +72,19 @@ export const InventoryService: InventoryServiceServer = {
       return callback(payload.error, null)
     }
   },
-  async reserveStock() {},
+  async reserveStock(call, callback) {
+    try {
+      const payload = ReserveStockRequestSchema.safeParse(call.request)
+      if (!payload.success) {
+        return callback(payload.error, null)
+      }
+      const response = await reserveStock(payload.data)
+      callback(null, response)
+    } catch (err) {
+      const grpcError = toGrpcError(err)
+      callback(grpcError, null as never)
+    }
+  },
   async releaseReservation() {},
   async confirmReservation() {},
 }

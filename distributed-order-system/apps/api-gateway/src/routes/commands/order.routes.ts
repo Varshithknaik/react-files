@@ -3,11 +3,23 @@ import { orderClient } from '../../grpcClients.js'
 import { CreateOrderRequest, CreateOrderResponse } from '@core/proto'
 import { ServiceError } from '@grpc/grpc-js'
 import { sendError, sendSuccess } from '../../lib/http-response.js'
+import { authMiddleware } from '../../middlewares/auth.middleware.js'
+import { createOrderSchema } from '../../schema/order.schema.js'
 
 export const orderRouter = Router()
 
-orderRouter.get('/', (req: Request, res: Response) => {
-  const request: CreateOrderRequest = { userId: '1', items: [] }
+orderRouter.post('/', authMiddleware, (req: Request, res: Response) => {
+  const payload = createOrderSchema.safeParse(req.body)
+
+  if (!payload.success) {
+    return sendError(res, 400, 'Invalid payload', payload.error)
+  }
+
+  const request: CreateOrderRequest = {
+    userId: req.user!.id,
+    items: payload.data.items,
+  }
+
   orderClient.createOrder(
     request,
     (err: ServiceError | null, response: CreateOrderResponse) => {

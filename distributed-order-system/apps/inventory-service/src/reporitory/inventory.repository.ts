@@ -1,7 +1,9 @@
+import { Prisma } from '@prisma/client-inventory-service'
 import { prisma } from '../lib/prisma.js'
 import {
   AddInventoryInput,
   BulkAddInventoryInput,
+  ReserveStockRequestInput,
   UpdateInventoryInput,
 } from '../schema/inventory.schema.js'
 import {
@@ -10,6 +12,7 @@ import {
   TOPICS,
   INVENTORY_EVENTS_TYPE,
   InventoryProductUpdated,
+  InventoryStockReserved,
 } from '@core/events'
 
 export async function addInventory(product: AddInventoryInput) {
@@ -165,4 +168,157 @@ export async function updateInventory(payload: UpdateInventoryInput) {
 
     return { sku: updated.sku }
   })
+}
+
+export class OptimisticStockConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+export async function reserveStock(payload: ReserveStockRequestInput) {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const quantityBySku = new Map<string, number>()
+
+      for (const item of payload.items) {
+        quantityBySku.set(
+          item.sku,
+          (quantityBySku.get(item.sku) ?? 0) + item.quantity
+        )
+      }
+
+      const requestedItems = Array.from(quantityBySku, ([sku, quantity]) => ({
+        sku,
+        quantity,
+      }))
+
+      const requestedSkus = requestedItems.map((item) => item.sku)
+
+      const products = await tx.$queryRaw<
+        {
+          sku: string
+          stock: number
+          version: number
+          price: number
+          offerPrice: number | null
+        }[]
+      >`
+        SELECT sku, stock, version, price, offer_price AS "offerPrice"
+        FROM "Products" 
+        WHERE sku IN (${Prisma.join(requestedSkus)})
+        FOR UPDATE
+        `
+
+      const productBySku = new Map(products.map((p) => [p.sku, p]))
+
+      const failures = []
+
+      for (const item of requestedItems) {
+        const product = productBySku.get(item.sku)
+
+        if (!product) {
+          failures.push({
+            sku: item.sku,
+            reason: 'SKU_NOT_FOUND',
+          })
+          continue
+        }
+
+        if (product.stock < item.quantity) {
+          failures.push({
+            sku: item.sku,
+            reason: 'INSUFFICIENT_STOCK',
+            requested: item.quantity,
+            available: product.stock,
+          })
+        }
+      }
+
+      if (failures.length > 0) {
+        throw new OptimisticStockConflictError(
+          JSON.stringify({ failures }, null, 2)
+        )
+      }
+
+      await tx.reservations.createMany({
+        data: requestedItems.map((item) => ({
+          orderId: payload.orderId,
+          sku: item.sku,
+          quantity: item.quantity,
+        })),
+      })
+
+      const caseStatement = requestedItems.map(
+        (item) => Prisma.sql`WHEN ${item.sku} THEN ${item.quantity}`
+      )
+
+      await tx.$executeRaw`
+        UPDATE "Products"
+        SET
+          stock = stock - CASE sku
+            ${Prisma.join(caseStatement)}
+          END,
+          version = version + 1
+        WHERE sku IN (${Prisma.join(requestedSkus)})
+      `
+
+      const envelope: EventEnvelope<InventoryStockReserved> = {
+        eventId: crypto.randomUUID(),
+        eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
+        occurredAt: new Date().toISOString(),
+        version: 1,
+        payload: {
+          orderId: payload.orderId,
+          items: requestedItems.map((item) => {
+            const product = productBySku.get(item.sku)
+            return {
+              sku: item.sku,
+              quantity: item.quantity,
+              remainingStock: product!.stock - item.quantity,
+              version: product!.version + 1,
+            }
+          }),
+          reservedAt: new Date().toISOString(),
+        },
+      }
+
+      await tx.outBoxEvent.create({
+        data: {
+          aggregateType: 'inventory.product',
+          aggregateId: payload.orderId,
+          topic: TOPICS.INVENTORY_EVENTS,
+          eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
+          payload: envelope,
+        },
+      })
+
+      return {
+        orderId: payload.orderId,
+        success: true,
+        items: requestedItems.map((item) => {
+          const product = productBySku.get(item.sku)!
+          return {
+            sku: item.sku,
+            quantity: item.quantity,
+            unitPrice: product.price,
+            offerPrice: product.offerPrice ?? undefined,
+            remainingStock: product.stock - item.quantity,
+            version: product.version + 1,
+          }
+        }),
+        reason: '',
+      }
+    })
+  } catch (error) {
+    if (error instanceof OptimisticStockConflictError) {
+      return {
+        orderId: payload.orderId,
+        success: false,
+        items: [],
+        reason: error.message,
+      }
+    }
+    throw error
+  }
 }
