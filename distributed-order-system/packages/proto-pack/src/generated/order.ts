@@ -29,10 +29,22 @@ export interface OrderItemInput {
   quantity: number;
 }
 
+export interface OrderItemResult {
+  sku: string;
+  quantity: number;
+  price: number;
+  offerPrice?: number | undefined;
+  effectiveUnitPrice: number;
+  lineTotal: number;
+  productName: string;
+}
+
 export interface CreateOrderResponse {
   orderId: string;
   status: string;
   total: number;
+  items: OrderItemResult[];
+  createdAt: string;
 }
 
 function createBaseCreateOrderRequest(): CreateOrderRequest {
@@ -187,8 +199,172 @@ export const OrderItemInput: MessageFns<OrderItemInput> = {
   },
 };
 
+function createBaseOrderItemResult(): OrderItemResult {
+  return {
+    sku: "",
+    quantity: 0,
+    price: 0,
+    offerPrice: undefined,
+    effectiveUnitPrice: 0,
+    lineTotal: 0,
+    productName: "",
+  };
+}
+
+export const OrderItemResult: MessageFns<OrderItemResult> = {
+  encode(message: OrderItemResult, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sku !== "") {
+      writer.uint32(10).string(message.sku);
+    }
+    if (message.quantity !== 0) {
+      writer.uint32(16).int32(message.quantity);
+    }
+    if (message.price !== 0) {
+      writer.uint32(29).float(message.price);
+    }
+    if (message.offerPrice !== undefined) {
+      writer.uint32(37).float(message.offerPrice);
+    }
+    if (message.effectiveUnitPrice !== 0) {
+      writer.uint32(45).float(message.effectiveUnitPrice);
+    }
+    if (message.lineTotal !== 0) {
+      writer.uint32(53).float(message.lineTotal);
+    }
+    if (message.productName !== "") {
+      writer.uint32(58).string(message.productName);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrderItemResult {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrderItemResult();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sku = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.quantity = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 29) {
+            break;
+          }
+
+          message.price = reader.float();
+          continue;
+        }
+        case 4: {
+          if (tag !== 37) {
+            break;
+          }
+
+          message.offerPrice = reader.float();
+          continue;
+        }
+        case 5: {
+          if (tag !== 45) {
+            break;
+          }
+
+          message.effectiveUnitPrice = reader.float();
+          continue;
+        }
+        case 6: {
+          if (tag !== 53) {
+            break;
+          }
+
+          message.lineTotal = reader.float();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.productName = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrderItemResult {
+    return {
+      sku: isSet(object.sku) ? globalThis.String(object.sku) : "",
+      quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
+      price: isSet(object.price) ? globalThis.Number(object.price) : 0,
+      offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
+      effectiveUnitPrice: isSet(object.effectiveUnitPrice) ? globalThis.Number(object.effectiveUnitPrice) : 0,
+      lineTotal: isSet(object.lineTotal) ? globalThis.Number(object.lineTotal) : 0,
+      productName: isSet(object.productName) ? globalThis.String(object.productName) : "",
+    };
+  },
+
+  toJSON(message: OrderItemResult): unknown {
+    const obj: any = {};
+    if (message.sku !== "") {
+      obj.sku = message.sku;
+    }
+    if (message.quantity !== 0) {
+      obj.quantity = Math.round(message.quantity);
+    }
+    if (message.price !== 0) {
+      obj.price = message.price;
+    }
+    if (message.offerPrice !== undefined) {
+      obj.offerPrice = message.offerPrice;
+    }
+    if (message.effectiveUnitPrice !== 0) {
+      obj.effectiveUnitPrice = message.effectiveUnitPrice;
+    }
+    if (message.lineTotal !== 0) {
+      obj.lineTotal = message.lineTotal;
+    }
+    if (message.productName !== "") {
+      obj.productName = message.productName;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<OrderItemResult>, I>>(base?: I): OrderItemResult {
+    return OrderItemResult.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<OrderItemResult>, I>>(object: I): OrderItemResult {
+    const message = createBaseOrderItemResult();
+    message.sku = object.sku ?? "";
+    message.quantity = object.quantity ?? 0;
+    message.price = object.price ?? 0;
+    message.offerPrice = object.offerPrice ?? undefined;
+    message.effectiveUnitPrice = object.effectiveUnitPrice ?? 0;
+    message.lineTotal = object.lineTotal ?? 0;
+    message.productName = object.productName ?? "";
+    return message;
+  },
+};
+
 function createBaseCreateOrderResponse(): CreateOrderResponse {
-  return { orderId: "", status: "", total: 0 };
+  return { orderId: "", status: "", total: 0, items: [], createdAt: "" };
 }
 
 export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
@@ -200,7 +376,13 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
       writer.uint32(18).string(message.status);
     }
     if (message.total !== 0) {
-      writer.uint32(25).double(message.total);
+      writer.uint32(29).float(message.total);
+    }
+    for (const v of message.items) {
+      OrderItemResult.encode(v!, writer.uint32(34).fork()).join();
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(42).string(message.createdAt);
     }
     return writer;
   },
@@ -229,11 +411,27 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
           continue;
         }
         case 3: {
-          if (tag !== 25) {
+          if (tag !== 29) {
             break;
           }
 
-          message.total = reader.double();
+          message.total = reader.float();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.items.push(OrderItemResult.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.createdAt = reader.string();
           continue;
         }
       }
@@ -250,6 +448,8 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
       orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
       status: isSet(object.status) ? globalThis.String(object.status) : "",
       total: isSet(object.total) ? globalThis.Number(object.total) : 0,
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => OrderItemResult.fromJSON(e)) : [],
+      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
     };
   },
 
@@ -264,6 +464,12 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
     if (message.total !== 0) {
       obj.total = message.total;
     }
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => OrderItemResult.toJSON(e));
+    }
+    if (message.createdAt !== "") {
+      obj.createdAt = message.createdAt;
+    }
     return obj;
   },
 
@@ -275,6 +481,8 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
     message.orderId = object.orderId ?? "";
     message.status = object.status ?? "";
     message.total = object.total ?? 0;
+    message.items = object.items?.map((e) => OrderItemResult.fromPartial(e)) || [];
+    message.createdAt = object.createdAt ?? "";
     return message;
   },
 };

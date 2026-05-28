@@ -195,6 +195,56 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
 
       const requestedSkus = requestedItems.map((item) => item.sku)
 
+      const existingReservations = await tx.reservations.findMany({
+        where: {
+          orderId: payload.orderId,
+        },
+        select: {
+          sku: true,
+          quantity: true,
+          product: {
+            select: {
+              price: true,
+              offerPrice: true,
+              stock: true,
+              version: true,
+              name: true,
+            },
+          },
+        },
+      })
+
+      const hasExistingReservations = existingReservations.length > 0
+
+      const isSameReservationRequest =
+        existingReservations.length === requestedItems.length &&
+        existingReservations.every((reservedItem) => {
+          const skuQuantity = quantityBySku.get(reservedItem.sku)
+          if (!skuQuantity) return false
+          return skuQuantity === reservedItem.quantity
+        })
+
+      if (hasExistingReservations && isSameReservationRequest) {
+        return {
+          orderId: payload.orderId,
+          success: true,
+          items: existingReservations.map((item) => {
+            return {
+              sku: item.sku,
+              quantity: item.quantity,
+              unitPrice: item.product.price,
+              offerPrice: item.product.offerPrice ?? undefined,
+              remainingStock: item.product.stock,
+              version: item.product.version,
+              productName: item.product.name,
+            }
+          }),
+          reason: '',
+        }
+      } else if (hasExistingReservations) {
+        throw new OptimisticStockConflictError('IDEMPOTENCY_CONFLICT')
+      }
+
       const products = await tx.$queryRaw<
         {
           sku: string
@@ -202,9 +252,10 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
           version: number
           price: number
           offerPrice: number | null
+          name: string
         }[]
       >`
-        SELECT sku, stock, version, price, offer_price AS "offerPrice"
+        SELECT sku, stock, version, price, offer_price AS "offerPrice" , name
         FROM "Products" 
         WHERE sku IN (${Prisma.join(requestedSkus)})
         FOR UPDATE
@@ -250,22 +301,24 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
       })
 
       const caseStatement = requestedItems.map(
-        (item) => Prisma.sql`WHEN ${item.sku} THEN ${item.quantity}`
+        (item) => Prisma.sql`WHEN ${item.sku} THEN ${item.quantity}::int`
       )
 
-      await tx.$executeRaw`
+      const query = Prisma.sql`
         UPDATE "Products"
         SET
           stock = stock - CASE sku
             ${Prisma.join(caseStatement)}
+            ELSE 0
           END,
           version = version + 1
         WHERE sku IN (${Prisma.join(requestedSkus)})
       `
+      await tx.$executeRaw(query)
 
       const envelope: EventEnvelope<InventoryStockReserved> = {
         eventId: crypto.randomUUID(),
-        eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
+        eventType: INVENTORY_EVENTS_TYPE.STOCK_RESERVED,
         occurredAt: new Date().toISOString(),
         version: 1,
         payload: {
@@ -288,7 +341,7 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
           aggregateType: 'inventory.product',
           aggregateId: payload.orderId,
           topic: TOPICS.INVENTORY_EVENTS,
-          eventType: INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED,
+          eventType: INVENTORY_EVENTS_TYPE.STOCK_RESERVED,
           payload: envelope,
         },
       })
@@ -305,6 +358,7 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
             offerPrice: product.offerPrice ?? undefined,
             remainingStock: product.stock - item.quantity,
             version: product.version + 1,
+            productName: product.name,
           }
         }),
         reason: '',

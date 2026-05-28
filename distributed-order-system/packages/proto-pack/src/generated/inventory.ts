@@ -95,6 +95,7 @@ export interface ReserveStockItem {
   offerPrice?: number | undefined;
   remainingStock: number;
   version: number;
+  productName: string;
 }
 
 export interface ReserveStockResponse {
@@ -1070,7 +1071,7 @@ export const ReserveStockRequest: MessageFns<ReserveStockRequest> = {
 };
 
 function createBaseReserveStockItem(): ReserveStockItem {
-  return { sku: "", quantity: 0, unitPrice: 0, offerPrice: undefined, remainingStock: 0, version: 0 };
+  return { sku: "", quantity: 0, unitPrice: 0, offerPrice: undefined, remainingStock: 0, version: 0, productName: "" };
 }
 
 export const ReserveStockItem: MessageFns<ReserveStockItem> = {
@@ -1092,6 +1093,9 @@ export const ReserveStockItem: MessageFns<ReserveStockItem> = {
     }
     if (message.version !== 0) {
       writer.uint32(48).int32(message.version);
+    }
+    if (message.productName !== "") {
+      writer.uint32(58).string(message.productName);
     }
     return writer;
   },
@@ -1151,6 +1155,14 @@ export const ReserveStockItem: MessageFns<ReserveStockItem> = {
           message.version = reader.int32();
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.productName = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1168,6 +1180,7 @@ export const ReserveStockItem: MessageFns<ReserveStockItem> = {
       offerPrice: isSet(object.offerPrice) ? globalThis.Number(object.offerPrice) : undefined,
       remainingStock: isSet(object.remainingStock) ? globalThis.Number(object.remainingStock) : 0,
       version: isSet(object.version) ? globalThis.Number(object.version) : 0,
+      productName: isSet(object.productName) ? globalThis.String(object.productName) : "",
     };
   },
 
@@ -1191,6 +1204,9 @@ export const ReserveStockItem: MessageFns<ReserveStockItem> = {
     if (message.version !== 0) {
       obj.version = Math.round(message.version);
     }
+    if (message.productName !== "") {
+      obj.productName = message.productName;
+    }
     return obj;
   },
 
@@ -1205,6 +1221,7 @@ export const ReserveStockItem: MessageFns<ReserveStockItem> = {
     message.offerPrice = object.offerPrice ?? undefined;
     message.remainingStock = object.remainingStock ?? 0;
     message.version = object.version ?? 0;
+    message.productName = object.productName ?? "";
     return message;
   },
 };

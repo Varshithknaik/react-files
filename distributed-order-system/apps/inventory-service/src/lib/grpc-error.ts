@@ -45,6 +45,12 @@ export function toGrpcError(error: unknown): {
           code: grpc.status.FAILED_PRECONDITION,
           message: `Foreign key constraint failed on: ${error.meta?.field_name}`,
         }
+      case 'P2010': {
+        return {
+          code: grpc.status.INTERNAL,
+          message: error.message,
+        }
+      }
       default:
         return {
           code: grpc.status.INTERNAL,

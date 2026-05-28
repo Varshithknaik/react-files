@@ -29,21 +29,22 @@ model Order {
   status    OrderStatus @default(CONFIRMED)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-
+  version   Int         @default(1)
+  total     Float
   orderItem OrderItem[]
 }
 
 model OrderItem {
-  id                 String  @id @default(uuid())
+  id                 String @id @default(uuid())
   orderId            String
-  order              Order   @relation(fields: [orderId], references: [id])
+  order              Order  @relation(fields: [orderId], references: [id])
   sku                String
   quantity           Int
   unitPrice          Float
   offerPrice         Float?
   effectiveUnitPrice Float
   lineTotal          Float
-  productName        String?
+  productName        String
 
   @@unique([orderId, sku])
   @@map("order_items")

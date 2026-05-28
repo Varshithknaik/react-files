@@ -90,6 +90,7 @@ message ReserveStockItem{
   optional float offerPrice = 4; // maps to offerPrice
   int32 remainingStock = 5;
   int32 version = 6;
+  string productName = 7;
 }
 
 message ReserveStockResponse{

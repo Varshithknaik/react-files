@@ -44,6 +44,9 @@ export const InventoryStockReservedSchema = z.object({
   ),
   reservedAt: z.string(),
 })
+export const InventoryStockReservedEnvelopeSchema = createEventEnvelopeSchema(
+  InventoryStockReservedSchema
+)
 
 export const InventoryStockReservationCancelledSchema = z.object({
   orderId: z.string(),
