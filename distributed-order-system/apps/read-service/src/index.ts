@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { KafkaClient } from '@core/kafka'
 import { TOPICS } from '@core/events'
 import { logger } from '@core/logger'
+import { env } from './config/env.js'
 
 dotenv.config({ quiet: true })
 
@@ -18,8 +19,10 @@ const OrderView = mongoose.model(
   })
 )
 
-const kafka = new KafkaClient('order-service', [process.env.KAFKA_BROKERS!])
-const consumer = kafka.createConsumer('read-model-group')
+const groupId = 'read-model-group-3'
+
+const kafka = new KafkaClient(groupId, env.kafkaBrokers)
+const consumer = kafka.createConsumer(groupId)
 
 app.get('/orders/:id', async (req, res) => {
   const response = await OrderView.findOne({ orderId: req.params.id })
@@ -27,9 +30,13 @@ app.get('/orders/:id', async (req, res) => {
 })
 
 const start = async () => {
-  await mongoose.connect(process.env.MONGO_URI!)
+  console.log('starting [READ SERVICE]')
+  await mongoose.connect(env.mongoURI)
   await consumer.connect()
-  await consumer.subscribe({ topic: TOPICS.ORDER_EVENTS })
+  await consumer.subscribe({
+    topic: TOPICS.INVENTORY_EVENTS,
+    fromBeginning: true,
+  })
   await consumer.run({
     eachMessage: async ({ message }) => {
       const event = JSON.parse(message.value!.toString())
@@ -43,8 +50,6 @@ const start = async () => {
       )
     },
   })
-
-  app.listen(3004)
 }
 
 start()
