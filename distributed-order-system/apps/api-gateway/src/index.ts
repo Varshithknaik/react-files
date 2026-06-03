@@ -7,7 +7,7 @@ import { authRouter } from './routes/auth.routes.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { sendSuccess } from './lib/http-response.js'
-import { inventoryRouter } from './routes/inventory/inventory.routes.js'
+import { inventoryRouter } from './routes/commands/inventory.routes.js'
 
 dotenv.config({ quiet: true })
 
