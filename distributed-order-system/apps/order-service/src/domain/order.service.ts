@@ -76,6 +76,7 @@ export async function createOrder(
         total: order.total,
         updatedAt: order.updatedAt.toISOString(),
         createdAt: order.createdAt.toISOString(),
+        userId: order.userId,
       },
     }
 

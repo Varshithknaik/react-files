@@ -1,4 +1,4 @@
-import { ORDER_EVENTS_TYPE } from 'packages/event-contracts/src/topics.js'
+import { ORDER_EVENTS_TYPE } from '@core/events'
 import {
   MAX_ATTEMPTS,
   OutboxEventHandler,

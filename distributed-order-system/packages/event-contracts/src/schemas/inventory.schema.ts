@@ -55,6 +55,7 @@ export const InventoryStockReservationCancelledSchema = z.object({
       sku: z.string(),
       quantity: z.number(),
       remainingStock: z.number(),
+      version: z.number(),
     })
   ),
   reason: z.string().optional(),

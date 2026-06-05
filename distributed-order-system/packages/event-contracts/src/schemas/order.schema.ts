@@ -15,6 +15,7 @@ export const orderItemSchema = z.object({
 
 export const OrderEventSchema = z.object({
   id: z.string(),
+  userId: z.string(),
   items: z.array(orderItemSchema),
   status: z.string(),
   total: z.number(),
