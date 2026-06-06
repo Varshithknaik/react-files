@@ -1,14 +1,6 @@
 version: '3.8'
 
 services:
-  mongo-read:
-    image: mongo:7
-    container_name: mongo-read
-    ports:
-      - '27017:27017'
-  # ==============================
-  # BASE IMAGE (BUILT ONCE)
-  # ==============================
   base-image:
     build:
       context: ../../
@@ -57,17 +49,3 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
-
-  # ==============================
-  # MONGO EXPRESS
-  # ==============================
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    depends_on:
-      - mongo-read
-    ports:
-      - '8081:8081'
-    environment:
-      MF_CONFIG_MONGODB_SERVER: mongo-read
-      MF_CONFIG_MONGODB_ENABLE_ADMIN: 'true'

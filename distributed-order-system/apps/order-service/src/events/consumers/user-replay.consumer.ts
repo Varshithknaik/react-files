@@ -39,7 +39,11 @@ export async function replayFromOffset(
       message,
       heartbeat,
     }) => {
-      if (processed >= stopAfter || msgPartition !== partition || !seekApplied) {
+      if (
+        processed >= stopAfter ||
+        msgPartition !== partition ||
+        !seekApplied
+      ) {
         return
       }
 

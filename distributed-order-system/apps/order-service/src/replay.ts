@@ -1,6 +1,6 @@
 import './config/env.js'
 import { logger } from '@core/logger'
-import { replayFromOffset } from './events/consumers/replay.consumer.js'
+import { replayFromOffset } from './events/consumers/user-replay.consumer.js'
 
 const args = process.argv.slice(2)
 const parsed: Record<string, string> = {}

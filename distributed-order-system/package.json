@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up --build",
-    "dev:infra": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up kafka-ui pgadmin mongo-express",
+    "dev:infra": "docker-compose --env-file .env.docker -f infrastructure/docker/docker-compose.yml up kafka-ui pgadmin",
     "order:local": "dotenv -e .env.local -- npx tsx watch apps/order-service/src/index.ts",
     "gateway:local": "dotenv -e .env.local -- npx tsx watch apps/api-gateway/src/index.ts",
     "inventory:local": "dotenv -e .env.local -- npx tsx watch apps/inventory-service/src/index.ts",
