@@ -1,7 +1,7 @@
 import { KafkaClient } from '@core/kafka'
 import { logger } from '@core/logger'
 import { Consumer } from 'kafkajs'
-import { DLQ_EVENTS_TYPE } from 'packages/event-contracts/src/topics.js'
+import { DLQ_EVENTS_TYPE } from '@core/events'
 
 export interface HandlerContext {
   kafka: KafkaClient
