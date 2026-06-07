@@ -2,7 +2,10 @@ import { EventEnvelope, INVENTORY_EVENTS_TYPE } from '@core/events'
 import mongoose from 'mongoose'
 import { ProcessedEvent } from '../../models/ProcessesEvents.js'
 import { logger } from '@core/logger'
-import { processProductAdded } from '../../repository/inventory.repository.js'
+import {
+  processProductAdded,
+  processStockReserved,
+} from '../../repository/inventory.repository.js'
 
 export async function processInventoryEvent(
   eventEnvelop: EventEnvelope<unknown>,
@@ -30,13 +33,16 @@ export async function processInventoryEvent(
         { session }
       )
 
+      const ctx = {
+        payload: eventEnvelop.payload,
+        eventId,
+        occurredAt,
+        session,
+      }
+
       switch (eventType) {
         case INVENTORY_EVENTS_TYPE.PRODUCT_ADDED:
-          await processProductAdded({
-            payload: eventEnvelop.payload,
-            eventId,
-            occurredAt,
-          })
+          await processProductAdded(ctx)
           break
         // case INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED:
         //   await processProductUpdated()
@@ -44,8 +50,11 @@ export async function processInventoryEvent(
         // case INVENTORY_EVENTS_TYPE.BULK_ADDED:
         //   await processBulkAdded()
         //   break
+        case INVENTORY_EVENTS_TYPE.STOCK_RESERVED:
+          await processStockReserved(ctx)
+          break
         default:
-          logger.error('[CRITICAL] Unknown event type in ORDER SERVICE', logCtx)
+          logger.error('[CRITICAL] Unknown event type in READ SERVICE', logCtx)
           throw new Error('Unknown event type')
       }
     })
