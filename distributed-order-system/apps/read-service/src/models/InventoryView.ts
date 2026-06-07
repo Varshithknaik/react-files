@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 
 export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock'
 
@@ -46,3 +46,8 @@ InventoryViewSchema.index({ effectivePrice: 1 })
 InventoryViewSchema.index({ updatedAt: -1 })
 
 InventoryViewSchema.index({ sku: 'text', name: 'text', category: 'text' })
+
+export const InventoryView = mongoose.model<IInventoryView>(
+  'InventoryView',
+  InventoryViewSchema
+)

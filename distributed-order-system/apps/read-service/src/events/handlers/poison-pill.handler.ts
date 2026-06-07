@@ -52,8 +52,8 @@ export async function handlePoisonPill(
       error,
     })
   } finally {
-    await consumer.commitOffsets([
-      { topic, partition, offset: (BigInt(offset) + 1n).toString() },
-    ])
+    // await consumer.commitOffsets([
+    //   { topic, partition, offset: (BigInt(offset) + 1n).toString() },
+    // ])
   }
 }

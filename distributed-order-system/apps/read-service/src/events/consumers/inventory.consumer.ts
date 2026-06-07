@@ -3,6 +3,7 @@ import { createKafkaClient } from '../../lib/kafka.js'
 import { logger } from '@core/logger'
 import { handlePoisonPill } from '../handlers/poison-pill.handler.js'
 import { z } from 'zod'
+import { processInventoryEvent } from '../handlers/inventory-message.handler.js'
 
 const MAX_RETRIES = 3
 const RETRY_BACKOFF_MS = 1000
@@ -51,8 +52,12 @@ export async function startInventoryConsumer() {
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
           await heartbeat()
-          // process Inventory Event
-          console.log(envelope)
+          await processInventoryEvent(
+            envelope,
+            topic,
+            partition,
+            message.offset
+          )
           lastError = null
           break
         } catch (error) {
