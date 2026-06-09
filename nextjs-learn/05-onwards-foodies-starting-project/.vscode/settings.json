@@ -1,0 +1,11 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "next",
+      "database": "${workspaceFolder:05-onwards-foodies-starting-project}/meals.db"
+    }
+  ],
+  "sqltools.useNodeRuntime": true
+}
