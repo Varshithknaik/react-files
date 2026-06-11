@@ -13,6 +13,7 @@ import {
   INVENTORY_EVENTS_TYPE,
   InventoryProductUpdated,
   InventoryStockReserved,
+  InventoryBulkCreated,
 } from '@core/events'
 
 export async function addInventory(product: AddInventoryInput) {
@@ -49,6 +50,7 @@ export async function addInventory(product: AddInventoryInput) {
 
     await tx.outBoxEvent.create({
       data: {
+        id: envelope.eventId,
         aggregateType: 'inventory.product',
         aggregateId: created.sku,
         topic: TOPICS.INVENTORY_EVENTS,
@@ -85,30 +87,27 @@ export async function bulkAddInventory(products: BulkAddInventoryInput) {
       },
     })
 
-    const envelope: EventEnvelope<InventoryProductCreated>[] = []
-    for (const created of createdItems) {
-      envelope.push({
-        eventId: crypto.randomUUID(),
-        eventType: INVENTORY_EVENTS_TYPE.BULK_ADDED,
-        occurredAt: new Date().toISOString(),
-        version: 1,
-        payload: {
-          product: {
-            sku: created.sku,
-            name: created.name,
-            category: created.category,
-            stock: created.stock,
-            price: created.price,
-            offerPrice: created.offerPrice ?? undefined,
-            updatedAt: created.updatedAt.toISOString(),
-            version: created.version,
-          },
-        },
-      })
+    const envelope: EventEnvelope<InventoryBulkCreated> = {
+      eventId: crypto.randomUUID(),
+      eventType: INVENTORY_EVENTS_TYPE.BULK_ADDED,
+      occurredAt: new Date().toISOString(),
+      version: 1,
+      payload: {
+        products: createdItems.map((created) => ({
+          sku: created.sku,
+          name: created.name,
+          category: created.category,
+          stock: created.stock,
+          price: created.price,
+          offerPrice: created.offerPrice ?? undefined,
+          updatedAt: created.updatedAt.toISOString(),
+          version: created.version,
+        })),
+      },
     }
-
     await tx.outBoxEvent.create({
       data: {
+        id: envelope.eventId,
         aggregateType: 'inventory.product',
         aggregateId: crypto.randomUUID(),
         topic: TOPICS.INVENTORY_EVENTS,
@@ -158,6 +157,7 @@ export async function updateInventory(payload: UpdateInventoryInput) {
 
     await tx.outBoxEvent.create({
       data: {
+        id: envelope.eventId,
         aggregateType: 'inventory.product',
         aggregateId: updated.sku,
         topic: TOPICS.INVENTORY_EVENTS,

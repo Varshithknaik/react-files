@@ -1,4 +1,5 @@
 import {
+  InventoryBulkCreatedSchema,
   InventoryProductCreatedSchema,
   InventoryStockReservedSchema,
 } from '@core/events'
@@ -88,6 +89,43 @@ export const processStockReserved = async ({
           },
         },
       },
+    })),
+    { session }
+  )
+}
+
+export const processBulkAdded = async ({
+  payload,
+  eventId,
+  occurredAt,
+  session,
+}: {
+  payload: unknown
+  eventId: string
+  occurredAt: string
+  session: ClientSession
+}) => {
+  const parsed = InventoryBulkCreatedSchema.safeParse(payload)
+
+  if (!parsed.success) {
+    throw new Error('[READ SERVICE] Invalid bulk add event payload')
+  }
+
+  const { products } = parsed.data
+
+  await InventoryView.insertMany(
+    products.map((product) => ({
+      sku: product.sku,
+      name: product.name,
+      category: product.category,
+      stock: product.stock,
+      stockStatus: getStockStatus(product.stock),
+      price: product.price,
+      offerPrice: product.offerPrice,
+      effectivePrice: product.offerPrice ?? product.price,
+      version: product.version,
+      lastEventId: eventId,
+      projectedAt: new Date(occurredAt),
     })),
     { session }
   )

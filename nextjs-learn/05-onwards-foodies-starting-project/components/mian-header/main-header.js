@@ -22,6 +22,9 @@ export default function MainHeader() {
             <li>
               <NavLink href="/community">Community page</NavLink>
             </li>
+            <li>
+              <NavLink href="/infinity">Infinity page</NavLink>
+            </li>
           </ul>
         </nav>
       </header>
