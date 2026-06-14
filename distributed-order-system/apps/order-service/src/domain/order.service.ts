@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma.js'
 import {
   EventEnvelope,
   TOPICS,
-  OrderCreated,
+  OrderConfirmed,
   ORDER_EVENTS_TYPE,
 } from '@core/events'
 
@@ -53,7 +53,7 @@ export async function createOrder(
       })),
     })
 
-    const envelope: EventEnvelope<OrderCreated> = {
+    const envelope: EventEnvelope<OrderConfirmed> = {
       eventId: crypto.randomUUID(),
       eventType: ORDER_EVENTS_TYPE.ORDER_CONFIRMED,
       occurredAt: new Date().toISOString(),

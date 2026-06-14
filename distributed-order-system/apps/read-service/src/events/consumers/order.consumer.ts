@@ -3,6 +3,7 @@ import { createKafkaClient } from '../../lib/kafka.js'
 import { logger } from '@core/logger'
 import z from 'zod'
 import { handlePoisonPill } from '../handlers/poison-pill.handler.js'
+import { processOrderService } from '../handlers/order-message.handler.js'
 
 const groupId = 'order-projection-read-group'
 const MAX_RETRIES = 3
@@ -25,8 +26,6 @@ export async function startOrderConsumer() {
       try {
         const value = JSON.parse(message.value?.toString() ?? '')
         envelope = createEventEnvelopeSchema(z.any()).parse(value)
-
-        logger.info('[READ SERVICE - ORDER] Envelope parsed', envelope)
       } catch (error) {
         logger.info('[READ SERVICE - ORDER ]Error parsing message', error)
         await handlePoisonPill(
@@ -49,7 +48,12 @@ export async function startOrderConsumer() {
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
           await heartbeat()
-          console.log(envelope)
+          await processOrderService({
+            eventEnvelope: envelope,
+            topic,
+            partition,
+            offset: message.offset,
+          })
           lastError = null
           break
         } catch (error) {

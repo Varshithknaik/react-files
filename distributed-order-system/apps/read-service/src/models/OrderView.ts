@@ -22,7 +22,7 @@ export interface IOrderView extends Document {
   items: Array<{
     id: string
     sku: string
-    quantity: string
+    quantity: number
     unitPrice: number
     offerPrice?: number
     effectiveUnitPrice: number

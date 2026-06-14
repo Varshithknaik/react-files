@@ -4,7 +4,7 @@ import {
   OutboxEventHandler,
   publishOutboxEvent,
 } from '../events/producers/order-service-producer.js'
-import { OrderCreatedEnvelopeSchema } from '@core/events'
+import { OrderConfirmedEnvelopeSchema } from '@core/events'
 import { prisma } from '../lib/prisma.js'
 import { logger } from '@core/logger'
 
@@ -14,7 +14,7 @@ const POLL_INTERVAL_MS = 5000
 const OUTBOX_HANDLERS: Partial<
   Record<keyof typeof ORDER_EVENTS_TYPE, OutboxEventHandler>
 > = {
-  ORDER_CONFIRMED: { schema: OrderCreatedEnvelopeSchema },
+  ORDER_CONFIRMED: { schema: OrderConfirmedEnvelopeSchema },
 }
 
 function claimOutboxEvents() {

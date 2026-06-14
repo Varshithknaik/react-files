@@ -30,9 +30,10 @@ export const processProductAdded = async ({
   const parsed = InventoryProductCreatedSchema.safeParse(payload)
 
   if (!parsed.success) {
-    throw new Error('[READ SERVICE] Invalid product added event payload')
+    throw new Error(
+      '[READ SERVICE - INVENTORY] Invalid product added event payload'
+    )
   }
-
   const { product } = parsed.data
 
   await InventoryView.create(

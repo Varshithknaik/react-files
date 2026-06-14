@@ -16,7 +16,7 @@ export async function processInventoryEvent(
   retry = 0
 ): Promise<void> {
   const session = await mongoose.startSession()
-  const { eventId, eventType, occurredAt } = eventEnvelop
+  const { eventId, eventType, occurredAt, payload } = eventEnvelop
   const logCtx = { eventId, eventType, topic, partition, offset, retry }
 
   try {
@@ -24,8 +24,8 @@ export async function processInventoryEvent(
       await ProcessedEvent.create(
         [
           {
-            eventId: eventEnvelop.eventId,
-            eventType: eventEnvelop.eventType,
+            eventId,
+            eventType,
             topic,
             partition,
             offset,
@@ -35,7 +35,7 @@ export async function processInventoryEvent(
       )
 
       const ctx = {
-        payload: eventEnvelop.payload,
+        payload,
         eventId,
         occurredAt,
         session,

@@ -24,7 +24,10 @@ export const OrderEventSchema = z.object({
   version: z.number(),
 })
 
-export const OrderCreatedEnvelopeSchema =
+export const OrderConfirmedPayloadSchema = OrderEventSchema.extend({
+  status: z.literal('CONFIRMED'),
+})
+export const OrderConfirmedEnvelopeSchema =
   createEventEnvelopeSchema(OrderEventSchema)
 
-export type OrderCreated = z.infer<typeof OrderEventSchema>
+export type OrderConfirmed = z.infer<typeof OrderEventSchema>
