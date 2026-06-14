@@ -82,6 +82,7 @@ export async function createOrder(
 
     await tx.outBoxEvent.create({
       data: {
+        id: envelope.eventId,
         aggregateType: 'order.events',
         aggregateId: order.id,
         topic: TOPICS.ORDER_EVENTS,

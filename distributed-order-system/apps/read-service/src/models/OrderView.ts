@@ -6,7 +6,7 @@ const OrderItemSubSchema = new Schema(
     sku: { type: String, required: true },
     quantity: { type: Number, required: true },
     unitPrice: { type: Number, required: true },
-    OfferPrice: { type: Number },
+    offerPrice: { type: Number },
     effectiveUnitPrice: { type: Number, required: true },
     lineTotal: { type: Number, required: true },
     productName: { type: String },

@@ -61,6 +61,15 @@ export function startOrderOutboxPoller() {
           logger.warn(
             `[ORDER Outbox] No handler found for event type ${event.eventType}`
           )
+          await prisma.outBoxEvent.updateManyAndReturn({
+            where: { id: event.id },
+            data: {
+              status: 'FAILED',
+              lockedAt: null,
+              lockedBy: null,
+              lastError: 'No handler found for event type ' + event.eventType,
+            },
+          })
           continue
         }
 

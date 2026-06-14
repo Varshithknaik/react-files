@@ -338,6 +338,7 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
 
       await tx.outBoxEvent.create({
         data: {
+          id: envelope.eventId,
           aggregateType: 'inventory.product',
           aggregateId: payload.orderId,
           topic: TOPICS.INVENTORY_EVENTS,
