@@ -14,7 +14,7 @@ const POLL_INTERVAL_MS = 5000
 const OUTBOX_HANDLERS: Partial<
   Record<keyof typeof ORDER_EVENTS_TYPE, OutboxEventHandler>
 > = {
-  ORDER_CREATED: { schema: OrderCreatedEnvelopeSchema },
+  ORDER_CONFIRMED: { schema: OrderCreatedEnvelopeSchema },
 }
 
 function claimOutboxEvents() {

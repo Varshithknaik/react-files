@@ -24,5 +24,5 @@ export const INVENTORY_EVENTS_TYPE = {
 } as const
 
 export const ORDER_EVENTS_TYPE = {
-  ORDER_CREATED: 'ORDER_CREATED',
+  ORDER_CONFIRMED: 'ORDER_CONFIRMED',
 } as const

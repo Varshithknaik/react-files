@@ -1,35 +1,34 @@
 import { createEventEnvelopeSchema, EventEnvelope, TOPICS } from '@core/events'
 import { createKafkaClient } from '../../lib/kafka.js'
 import { logger } from '@core/logger'
+import z from 'zod'
 import { handlePoisonPill } from '../handlers/poison-pill.handler.js'
-import { z } from 'zod'
-import { processInventoryEvent } from '../handlers/inventory-message.handler.js'
 
+const groupId = 'order-projection-read-group'
 const MAX_RETRIES = 3
 const RETRY_BACKOFF_MS = 1000
 
-export async function startInventoryConsumer() {
-  const groupId = 'inventory-projections-read-group'
-
+export async function startOrderConsumer() {
   const kafkaClient = createKafkaClient(groupId)
   const consumer = kafkaClient.createConsumer(groupId + '-consumer')
   await consumer.connect()
   await consumer.subscribe({
-    topic: TOPICS.INVENTORY_EVENTS,
+    topic: TOPICS.ORDER_EVENTS,
     fromBeginning: true,
   })
 
   await consumer.run({
-    eachMessage: async ({ topic, partition, message, heartbeat }) => {
+    autoCommit: false,
+    eachMessage: async ({ message, topic, partition, heartbeat }) => {
       await heartbeat()
       let envelope: EventEnvelope<unknown>
       try {
-        const row = JSON.parse(message.value?.toString() ?? '')
-        envelope = createEventEnvelopeSchema(z.any()).parse(row)
+        const value = JSON.parse(message.value?.toString() ?? '')
+        envelope = createEventEnvelopeSchema(z.any()).parse(value)
+
+        logger.info('[READ SERVICE - ORDER] Envelope parsed', envelope)
       } catch (error) {
-        logger.error('Failed to process inventory event', {
-          error,
-        })
+        logger.info('[READ SERVICE - ORDER ]Error parsing message', error)
         await handlePoisonPill(
           {
             kafka: kafkaClient,
@@ -41,22 +40,16 @@ export async function startInventoryConsumer() {
             message,
           },
           error as Error,
-          'Failed to process inventory event -> Invalid Envelop'
+          '[READ SERVICE - ORDER] Failed to process order event'
         )
         return
       }
 
       let lastError: Error | null = null
-
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
           await heartbeat()
-          await processInventoryEvent(
-            envelope,
-            topic,
-            partition,
-            message.offset
-          )
+          console.log(envelope)
           lastError = null
           break
         } catch (error) {
@@ -68,7 +61,6 @@ export async function startInventoryConsumer() {
           }
         }
       }
-
       if (lastError) {
         await handlePoisonPill(
           {
@@ -80,8 +72,8 @@ export async function startInventoryConsumer() {
             offset: message.offset,
             message,
           },
-          lastError,
-          'Event processing failed after retries, moved to DLQ'
+          lastError as Error,
+          '[READ SERVICE - ORDER] Event processing failed after retries, moved to DLQ'
         )
       }
     },
@@ -90,13 +82,11 @@ export async function startInventoryConsumer() {
   return {
     shutdown: async () => {
       logger.info(
-        '[READ SERVICE - INVENTORY] Shutting down inventory consumer gracefully...'
+        '[READ SERVICE - ORDER] Shutting down order consumer gracefully...'
       )
       await consumer.stop()
       await consumer.disconnect()
-      logger.info(
-        '[READ SERVICE - INVENTORY] Inventory consumer shut down gracefully'
-      )
+      logger.info('[READ SERVICE - ORDER] Order consumer shut down gracefully')
     },
   }
 }

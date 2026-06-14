@@ -55,7 +55,7 @@ export async function createOrder(
 
     const envelope: EventEnvelope<OrderCreated> = {
       eventId: crypto.randomUUID(),
-      eventType: ORDER_EVENTS_TYPE.ORDER_CREATED,
+      eventType: ORDER_EVENTS_TYPE.ORDER_CONFIRMED,
       occurredAt: new Date().toISOString(),
       version: 1,
       payload: {
@@ -85,7 +85,7 @@ export async function createOrder(
         aggregateType: 'order.events',
         aggregateId: order.id,
         topic: TOPICS.ORDER_EVENTS,
-        eventType: ORDER_EVENTS_TYPE.ORDER_CREATED,
+        eventType: ORDER_EVENTS_TYPE.ORDER_CONFIRMED,
         payload: envelope,
       },
     })
