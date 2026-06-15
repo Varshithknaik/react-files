@@ -1,14 +1,7 @@
-import Link from 'next/link'
-import Header from './Header'
-
-export default function Home() {
-  console.log('Executing .....')
+export default function HomePage() {
   return (
-    <main>
-      <Header />
-      <p>🔥 Let&apos;s get started! 🔥</p>
-      {/* <a href="/about">About US</a> */}
-      <Link href="/about">About US</Link>
-    </main>
-  )
+    <div id="home">
+      <h1>Next.js Routing & Page Rendering</h1>
+    </div>
+  );
 }

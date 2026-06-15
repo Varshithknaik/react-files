@@ -1,14 +1,14 @@
-import './globals.css'
+import './globals.css';
 
 export const metadata = {
-  title: 'NextJS Course App',
-  description: 'Your first NextJS app!',
-};
+  title: 'Next.js Page Routing & Rendering',
+  description: 'Learn how to route to different pages.',
+}
 
 export default function RootLayout({ children }) {
-  return (
+ return (
     <html lang="en">
       <body>{children}</body>
     </html>
-  );
+  )
 }
