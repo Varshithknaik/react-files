@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export default function NewsList({ news }) {
-  console.log(news)
   return (
     <ul className="news-list">
       {news.map((singleNewsItem) => (
