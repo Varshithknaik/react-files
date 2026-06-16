@@ -17,7 +17,7 @@ export default function NewsDetails({ params }) {
           width={1000}
         />
         <h1>{newsItem.title}</h1>
-        <time datetime={newsItem.date}>{newsItem.date}</time>
+        <time dateTime={newsItem.date}>{newsItem.date}</time>
       </header>
       <p>{newsItem.content}</p>
     </article>
