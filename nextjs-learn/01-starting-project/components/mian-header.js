@@ -15,6 +15,9 @@ export default function MainHeader() {
           <li>
             <NavLink href="/archive">Archive</NavLink>
           </li>
+          <li>
+            <NavLink href="/round-robin">Round Robin</NavLink>
+          </li>
         </ul>
       </nav>
     </header>
