@@ -16,7 +16,7 @@ inventoryRouter.post(
   (req: Request, res: Response) => {
     const payload = addInventorySchema.safeParse(req.body)
     if (!payload.success) {
-      return sendError(res, 400, 'Invalid payload', payload.error.message)
+      return sendError(res, 400, 'Invalid payload', payload.error.issues)
     }
 
     inventoryClient.addInventory(payload.data, (err, resp) => {
@@ -39,7 +39,7 @@ inventoryRouter.post(
   (req: Request, res: Response) => {
     const payload = addInventorySchema.array().safeParse(req.body)
     if (!payload.success) {
-      return sendError(res, 400, 'Invalid payload', payload.error.message)
+      return sendError(res, 400, 'Invalid payload', payload.error.issues)
     }
 
     inventoryClient.bulkAddInventory(
@@ -60,7 +60,7 @@ inventoryRouter.post(
 )
 
 inventoryRouter.patch(
-  '/products/:sku',
+  '/products/:sku/',
   authMiddleware,
   (req: Request, res: Response) => {
     const payload = updateInventorySchema.safeParse({
@@ -68,7 +68,7 @@ inventoryRouter.patch(
       ...req.body,
     })
     if (!payload.success) {
-      return sendError(res, 400, 'Invalid payload', payload.error.message)
+      return sendError(res, 400, 'Invalid payload', payload.error.issues)
     }
 
     inventoryClient.updateInventory(payload.data, (err, resp) => {

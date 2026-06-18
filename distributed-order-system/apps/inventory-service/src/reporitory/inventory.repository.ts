@@ -144,14 +144,18 @@ export async function updateInventory(payload: UpdateInventoryInput) {
       occurredAt: new Date().toISOString(),
       version: 1,
       payload: {
-        sku: updated.sku,
-        name: updated.name,
-        category: updated.category,
-        stock: updated.stock,
-        price: updated.price,
-        offerPrice: updated.offerPrice ?? undefined,
-        updatedAt: updated.updatedAt.toISOString(),
-        version: updated.version,
+        products: [
+          {
+            sku: updated.sku,
+            name: updated.name,
+            category: updated.category,
+            stock: updated.stock,
+            price: updated.price,
+            offerPrice: updated.offerPrice ?? undefined,
+            updatedAt: updated.updatedAt.toISOString(),
+            version: updated.version,
+          },
+        ],
       },
     }
 

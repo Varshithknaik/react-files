@@ -1,6 +1,7 @@
 import { ORDER_EVENTS_TYPE } from '@core/events'
 import {
   MAX_ATTEMPTS,
+  nextRetryAt,
   OutboxEventHandler,
   publishOutboxEvent,
 } from '../events/producers/order-service-producer.js'
@@ -61,12 +62,14 @@ export function startOrderOutboxPoller() {
           logger.warn(
             `[ORDER Outbox] No handler found for event type ${event.eventType}`
           )
-          await prisma.outBoxEvent.updateManyAndReturn({
+          await prisma.outBoxEvent.update({
             where: { id: event.id },
             data: {
               status: 'FAILED',
               lockedAt: null,
               lockedBy: null,
+              attempt: event.attempt + 1,
+              nextAttemptAt: nextRetryAt(event.attempt + 1),
               lastError: 'No handler found for event type ' + event.eventType,
             },
           })

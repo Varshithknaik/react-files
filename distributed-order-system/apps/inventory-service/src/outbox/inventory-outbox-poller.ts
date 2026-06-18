@@ -4,17 +4,17 @@ import {
   InventoryProductCreatedEnvelopeSchema,
   InventoryBulkCreatedEnvelopeSchema,
   InventoryStockReservedEnvelopeSchema,
+  InventoryProductUpdatedEnvelopeSchema,
 } from '@core/events'
 import {
   MAX_ATTEMPTS,
+  nextRetryAt,
   OutboxEventHandler,
   publishOutboxEvent,
 } from '../events/producers/inventory-service-publish.js'
 
 const BATCH_SIZE = 50
 const POLL_INTERVAL_MS = 5000
-
-const WORKER_ID = `inventory-outbox-${crypto.randomUUID()}`
 
 /**
  * Handler map: add a new entry here whenever a new outbox event type is introduced.
@@ -26,6 +26,7 @@ const OUTBOX_HANDLERS: Partial<
   PRODUCT_ADDED: { schema: InventoryProductCreatedEnvelopeSchema },
   BULK_ADDED: { schema: InventoryBulkCreatedEnvelopeSchema },
   STOCK_RESERVED: { schema: InventoryStockReservedEnvelopeSchema },
+  PRODUCT_UPDATED: { schema: InventoryProductUpdatedEnvelopeSchema },
 }
 
 function claimOutboxEvents() {
@@ -43,18 +44,13 @@ function claimOutboxEvents() {
     const ids = rows.map((row) => row.id)
     if (ids.length === 0) return []
 
-    await tx.outBoxEvent.updateMany({
+    return await tx.outBoxEvent.updateManyAndReturn({
       where: { id: { in: ids } },
       data: {
         status: 'PROCESSING',
         lockedAt: new Date(),
-        lockedBy: WORKER_ID,
+        lockedBy: process.pid?.toString(),
       },
-    })
-
-    return tx.outBoxEvent.findMany({
-      where: { id: { in: ids } },
-      orderBy: { createdAt: 'asc' },
     })
   })
 }
@@ -83,6 +79,17 @@ export function startInventoryOutboxPoller() {
           console.warn(
             `No outbox handler registered for eventType: ${event.eventType}`
           )
+          await prisma.outBoxEvent.update({
+            where: { id: event.id },
+            data: {
+              status: 'FAILED',
+              lockedAt: null,
+              lockedBy: null,
+              attempt: event.attempt + 1,
+              nextAttemptAt: nextRetryAt(event.attempt + 1),
+              lastError: 'No Handler found for event type ' + event.eventType,
+            },
+          })
           continue
         }
 
