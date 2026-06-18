@@ -1,10 +1,12 @@
 import {
   InventoryBulkCreatedSchema,
   InventoryProductCreatedSchema,
+  InventoryProductUpdatedSchema,
   InventoryStockReservedSchema,
 } from '@core/events'
 import { InventoryView, StockStatus } from '../models/InventoryView.js'
 import { ClientSession } from 'mongoose'
+import { logger } from '@core/logger'
 
 const getStockStatus = (stock: number): StockStatus => {
   if (stock === 0) {
@@ -130,4 +132,60 @@ export const processBulkAdded = async ({
     })),
     { session }
   )
+}
+
+export const processProductUpdated = async ({
+  payload,
+  eventId,
+  occurredAt,
+  session,
+}: {
+  payload: unknown
+  eventId: string
+  occurredAt: string
+  session: ClientSession
+}) => {
+  const parsed = InventoryProductUpdatedSchema.safeParse(payload)
+
+  if (!parsed.success) {
+    throw new Error('[READ SERVICE] Invalid product update event payload')
+  }
+
+  const { products } = parsed.data
+
+  const result = await InventoryView.bulkWrite(
+    products.map((product) => ({
+      updateOne: {
+        filter: { sku: product.sku, version: { $lt: product.version } },
+        update: {
+          $set: {
+            ...(product.name && { name: product.name }),
+            ...(product.category && { category: product.category }),
+            ...(product.price !== undefined && { price: product.price }),
+            ...(product.offerPrice !== undefined && {
+              offerPrice: product.offerPrice,
+            }),
+            ...(product.stock !== undefined && {
+              stock: product.stock,
+              stockStatus: getStockStatus(product.stock),
+            }),
+            version: product.version,
+            lastEventId: eventId,
+            projectedAt: new Date(),
+            updateAt: new Date(occurredAt),
+          },
+        },
+      },
+    })),
+    { session }
+  )
+
+  const unmatchedCount = products.length - result.matchedCount
+  if (unmatchedCount > 0) {
+    logger.warn('[READ SERVICE] PRODUCT_UPDATED: some updates were skipped', {
+      eventId,
+      expected: products.length,
+      matched: result.matchedCount,
+    })
+  }
 }

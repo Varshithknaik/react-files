@@ -26,8 +26,15 @@ export const InventoryBulkCreatedEnvelopeSchema = createEventEnvelopeSchema(
   InventoryBulkCreatedSchema
 )
 
-export const InventoryProductUpdatedSchema =
-  InventoryProductSchema.partial().required({ sku: true, version: true })
+export const InventoryProductUpdatedSchema = z.object({
+  products: z.array(
+    InventoryProductSchema.partial().required({
+      sku: true,
+      version: true,
+    })
+  ),
+})
+
 export const InventoryProductUpdatedEnvelopeSchema = createEventEnvelopeSchema(
   InventoryProductUpdatedSchema
 )

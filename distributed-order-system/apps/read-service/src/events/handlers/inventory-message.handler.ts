@@ -5,6 +5,7 @@ import { logger } from '@core/logger'
 import {
   processBulkAdded,
   processProductAdded,
+  processProductUpdated,
   processStockReserved,
 } from '../../repository/inventory.repository.js'
 
@@ -45,9 +46,9 @@ export async function processInventoryEvent(
         case INVENTORY_EVENTS_TYPE.PRODUCT_ADDED:
           await processProductAdded(ctx)
           break
-        // case INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED:
-        //   await processProductUpdated()
-        //   break
+        case INVENTORY_EVENTS_TYPE.PRODUCT_UPDATED:
+          await processProductUpdated(ctx)
+          break
         case INVENTORY_EVENTS_TYPE.BULK_ADDED:
           await processBulkAdded(ctx)
           break
