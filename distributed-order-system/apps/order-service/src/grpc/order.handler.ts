@@ -24,4 +24,5 @@ export const orderService: OrderServiceServer = {
       callback(error as Error, null as never)
     }
   },
+  cancelOrder: async () => {},
 }

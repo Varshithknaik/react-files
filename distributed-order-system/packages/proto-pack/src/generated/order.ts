@@ -47,6 +47,17 @@ export interface CreateOrderResponse {
   createdAt: string;
 }
 
+export interface CancelOrderRequest {
+  userId: string;
+  orderId: string;
+  message: string;
+}
+
+export interface CancelOrderResponse {
+  orderId: string;
+  status: string;
+}
+
 function createBaseCreateOrderRequest(): CreateOrderRequest {
   return { userId: "", items: [] };
 }
@@ -487,6 +498,174 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
   },
 };
 
+function createBaseCancelOrderRequest(): CancelOrderRequest {
+  return { userId: "", orderId: "", message: "" };
+}
+
+export const CancelOrderRequest: MessageFns<CancelOrderRequest> = {
+  encode(message: CancelOrderRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.orderId !== "") {
+      writer.uint32(18).string(message.orderId);
+    }
+    if (message.message !== "") {
+      writer.uint32(26).string(message.message);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CancelOrderRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCancelOrderRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CancelOrderRequest {
+    return {
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+    };
+  },
+
+  toJSON(message: CancelOrderRequest): unknown {
+    const obj: any = {};
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CancelOrderRequest>, I>>(base?: I): CancelOrderRequest {
+    return CancelOrderRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CancelOrderRequest>, I>>(object: I): CancelOrderRequest {
+    const message = createBaseCancelOrderRequest();
+    message.userId = object.userId ?? "";
+    message.orderId = object.orderId ?? "";
+    message.message = object.message ?? "";
+    return message;
+  },
+};
+
+function createBaseCancelOrderResponse(): CancelOrderResponse {
+  return { orderId: "", status: "" };
+}
+
+export const CancelOrderResponse: MessageFns<CancelOrderResponse> = {
+  encode(message: CancelOrderResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.orderId !== "") {
+      writer.uint32(10).string(message.orderId);
+    }
+    if (message.status !== "") {
+      writer.uint32(18).string(message.status);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CancelOrderResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCancelOrderResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.orderId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CancelOrderResponse {
+    return {
+      orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+    };
+  },
+
+  toJSON(message: CancelOrderResponse): unknown {
+    const obj: any = {};
+    if (message.orderId !== "") {
+      obj.orderId = message.orderId;
+    }
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CancelOrderResponse>, I>>(base?: I): CancelOrderResponse {
+    return CancelOrderResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CancelOrderResponse>, I>>(object: I): CancelOrderResponse {
+    const message = createBaseCancelOrderResponse();
+    message.orderId = object.orderId ?? "";
+    message.status = object.status ?? "";
+    return message;
+  },
+};
+
 export type OrderServiceService = typeof OrderServiceService;
 export const OrderServiceService = {
   createOrder: {
@@ -498,10 +677,20 @@ export const OrderServiceService = {
     responseSerialize: (value: CreateOrderResponse): Buffer => Buffer.from(CreateOrderResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): CreateOrderResponse => CreateOrderResponse.decode(value),
   },
+  cancelOrder: {
+    path: "/order.OrderService/CancelOrder" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CancelOrderRequest): Buffer => Buffer.from(CancelOrderRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CancelOrderRequest => CancelOrderRequest.decode(value),
+    responseSerialize: (value: CancelOrderResponse): Buffer => Buffer.from(CancelOrderResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CancelOrderResponse => CancelOrderResponse.decode(value),
+  },
 } as const;
 
 export interface OrderServiceServer extends UntypedServiceImplementation {
   createOrder: handleUnaryCall<CreateOrderRequest, CreateOrderResponse>;
+  cancelOrder: handleUnaryCall<CancelOrderRequest, CancelOrderResponse>;
 }
 
 export interface OrderServiceClient extends Client {
@@ -519,6 +708,21 @@ export interface OrderServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateOrderResponse) => void,
+  ): ClientUnaryCall;
+  cancelOrder(
+    request: CancelOrderRequest,
+    callback: (error: ServiceError | null, response: CancelOrderResponse) => void,
+  ): ClientUnaryCall;
+  cancelOrder(
+    request: CancelOrderRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CancelOrderResponse) => void,
+  ): ClientUnaryCall;
+  cancelOrder(
+    request: CancelOrderRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CancelOrderResponse) => void,
   ): ClientUnaryCall;
 }
 
