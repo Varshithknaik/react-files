@@ -36,7 +36,7 @@ orderRouter.post('/', authMiddleware, (req: Request, res: Response) => {
   )
 })
 
-orderRouter.post(
+orderRouter.patch(
   '/cancel/:orderId',
   authMiddleware,
   (req: Request, res: Response) => {
@@ -52,7 +52,6 @@ orderRouter.post(
     }
 
     const request: CancelOrderRequest = {
-      userId: req.user!.id,
       orderId,
       message: 'USER_REQUESTED',
     }

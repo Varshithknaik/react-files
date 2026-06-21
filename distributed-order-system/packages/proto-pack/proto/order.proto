@@ -5,6 +5,7 @@ package order;
 service OrderService{
   rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
   rpc CancelOrder ( CancelOrderRequest ) returns ( CancelOrderResponse );
+  // rpc CancelPartialOrder ();
 }
 
 message CreateOrderRequest{
@@ -36,9 +37,8 @@ message CreateOrderResponse{
 }
 
 message CancelOrderRequest {
-  string userId = 1;
-  string orderId = 2;
-  string message = 3;
+  string orderId = 1;
+  string message = 2;
 }
 
 message CancelOrderResponse {

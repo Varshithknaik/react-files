@@ -48,7 +48,6 @@ export interface CreateOrderResponse {
 }
 
 export interface CancelOrderRequest {
-  userId: string;
   orderId: string;
   message: string;
 }
@@ -499,19 +498,16 @@ export const CreateOrderResponse: MessageFns<CreateOrderResponse> = {
 };
 
 function createBaseCancelOrderRequest(): CancelOrderRequest {
-  return { userId: "", orderId: "", message: "" };
+  return { orderId: "", message: "" };
 }
 
 export const CancelOrderRequest: MessageFns<CancelOrderRequest> = {
   encode(message: CancelOrderRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== "") {
-      writer.uint32(10).string(message.userId);
-    }
     if (message.orderId !== "") {
-      writer.uint32(18).string(message.orderId);
+      writer.uint32(10).string(message.orderId);
     }
     if (message.message !== "") {
-      writer.uint32(26).string(message.message);
+      writer.uint32(18).string(message.message);
     }
     return writer;
   },
@@ -528,19 +524,11 @@ export const CancelOrderRequest: MessageFns<CancelOrderRequest> = {
             break;
           }
 
-          message.userId = reader.string();
+          message.orderId = reader.string();
           continue;
         }
         case 2: {
           if (tag !== 18) {
-            break;
-          }
-
-          message.orderId = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
             break;
           }
 
@@ -558,7 +546,6 @@ export const CancelOrderRequest: MessageFns<CancelOrderRequest> = {
 
   fromJSON(object: any): CancelOrderRequest {
     return {
-      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
       orderId: isSet(object.orderId) ? globalThis.String(object.orderId) : "",
       message: isSet(object.message) ? globalThis.String(object.message) : "",
     };
@@ -566,9 +553,6 @@ export const CancelOrderRequest: MessageFns<CancelOrderRequest> = {
 
   toJSON(message: CancelOrderRequest): unknown {
     const obj: any = {};
-    if (message.userId !== "") {
-      obj.userId = message.userId;
-    }
     if (message.orderId !== "") {
       obj.orderId = message.orderId;
     }
@@ -583,7 +567,6 @@ export const CancelOrderRequest: MessageFns<CancelOrderRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<CancelOrderRequest>, I>>(object: I): CancelOrderRequest {
     const message = createBaseCancelOrderRequest();
-    message.userId = object.userId ?? "";
     message.orderId = object.orderId ?? "";
     message.message = object.message ?? "";
     return message;
@@ -677,6 +660,7 @@ export const OrderServiceService = {
     responseSerialize: (value: CreateOrderResponse): Buffer => Buffer.from(CreateOrderResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): CreateOrderResponse => CreateOrderResponse.decode(value),
   },
+  /** rpc CancelPartialOrder (); */
   cancelOrder: {
     path: "/order.OrderService/CancelOrder" as const,
     requestStream: false as const,
@@ -690,6 +674,7 @@ export const OrderServiceService = {
 
 export interface OrderServiceServer extends UntypedServiceImplementation {
   createOrder: handleUnaryCall<CreateOrderRequest, CreateOrderResponse>;
+  /** rpc CancelPartialOrder (); */
   cancelOrder: handleUnaryCall<CancelOrderRequest, CancelOrderResponse>;
 }
 
@@ -709,6 +694,7 @@ export interface OrderServiceClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateOrderResponse) => void,
   ): ClientUnaryCall;
+  /** rpc CancelPartialOrder (); */
   cancelOrder(
     request: CancelOrderRequest,
     callback: (error: ServiceError | null, response: CancelOrderResponse) => void,

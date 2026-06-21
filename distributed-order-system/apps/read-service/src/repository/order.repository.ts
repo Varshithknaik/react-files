@@ -27,6 +27,7 @@ export const processOrderConfirmed = async ({
     version,
     createdAt,
     updatedAt,
+    createdBy,
   } = parsed.data
 
   await OrderView.create(
@@ -34,7 +35,7 @@ export const processOrderConfirmed = async ({
       {
         orderId,
         lastEventId: eventId,
-        userId,
+        createdBy: createdBy ?? userId,
         status,
         total,
         items: items.map(({ orderId: _, ...item }) => item),

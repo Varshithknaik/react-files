@@ -12,4 +12,10 @@ export const createOrderSchema = z.object({
     .min(1),
 })
 
+export const cancelOrderSchema = z.object({
+  orderId: z.string(),
+  message: z.enum(['USER_REQUESTED']),
+})
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>
+export type CancelOrderInput = z.infer<typeof cancelOrderSchema>

@@ -16,7 +16,7 @@ const OrderItemSubSchema = new Schema(
 
 export interface IOrderView extends Document {
   orderId: string
-  userId: string
+  createdBy: string
   status: string
   total: number
   items: Array<{
@@ -38,7 +38,7 @@ export interface IOrderView extends Document {
 
 export const OrderViewSchema = new Schema<IOrderView>(
   {
-    userId: { type: String, required: true },
+    createdBy: { type: String, required: true },
     orderId: { type: String, required: true },
     items: { type: [OrderItemSubSchema], default: [] },
     status: { type: String, required: true },

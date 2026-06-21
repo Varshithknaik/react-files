@@ -15,7 +15,8 @@ export const orderItemSchema = z.object({
 
 export const OrderEventSchema = z.object({
   id: z.string(),
-  userId: z.string(),
+  userId: z.string().optional(),
+  createdBy: z.string(),
   items: z.array(orderItemSchema),
   status: z.string(),
   total: z.number(),
@@ -27,7 +28,19 @@ export const OrderEventSchema = z.object({
 export const OrderConfirmedPayloadSchema = OrderEventSchema.extend({
   status: z.literal('CONFIRMED'),
 })
+
+export const OrderCancelledPayloadSchema = z.object({
+  orderId: z.string(),
+  status: z.literal('CANCELLED'),
+  version: z.number(),
+  updatedAt: z.string(),
+})
+
 export const OrderConfirmedEnvelopeSchema =
   createEventEnvelopeSchema(OrderEventSchema)
+export const OrderCancelledEnvelopeSchema = createEventEnvelopeSchema(
+  OrderCancelledPayloadSchema
+)
 
 export type OrderConfirmed = z.infer<typeof OrderEventSchema>
+export type OrderCancelled = z.infer<typeof OrderCancelledPayloadSchema>

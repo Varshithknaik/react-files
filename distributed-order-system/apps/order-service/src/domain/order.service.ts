@@ -6,7 +6,9 @@ import {
   TOPICS,
   OrderConfirmed,
   ORDER_EVENTS_TYPE,
+  OrderCancelled,
 } from '@core/events'
+import { CancelOrderInput } from '../schema/order.schema.js'
 
 export async function createOrder(
   request: CreateOrderRequest
@@ -34,7 +36,7 @@ export async function createOrder(
   return await prisma.$transaction(async (tx) => {
     const order = await tx.order.create({
       data: {
-        userId: request.userId,
+        createdBy: request.userId,
         total,
         status: 'CONFIRMED',
       },
@@ -76,7 +78,7 @@ export async function createOrder(
         total: order.total,
         updatedAt: order.updatedAt.toISOString(),
         createdAt: order.createdAt.toISOString(),
-        userId: order.userId,
+        createdBy: order.createdBy,
       },
     }
 
@@ -105,6 +107,47 @@ export async function createOrder(
         productName: item.productName,
       })),
       createdAt: order.createdAt.toISOString(),
+    }
+  })
+}
+
+export const cancelOrder = async (data: CancelOrderInput) => {
+  return await prisma.$transaction(async (tx) => {
+    const order = await tx.order.update({
+      where: { id: data.orderId },
+      data: { status: 'CANCELLED', version: { increment: 1 } },
+      select: {
+        id: true,
+        version: true,
+        updatedAt: true,
+      },
+    })
+    const evenvelope: EventEnvelope<OrderCancelled> = {
+      eventId: crypto.randomUUID(),
+      eventType: ORDER_EVENTS_TYPE.ORDER_CANCELLED,
+      occurredAt: new Date().toISOString(),
+      version: 1,
+      payload: {
+        orderId: order.id,
+        status: 'CANCELLED',
+        version: order.version,
+        updatedAt: order.updatedAt.toISOString(),
+      },
+    }
+
+    await tx.outBoxEvent.create({
+      data: {
+        id: evenvelope.eventId,
+        aggregateType: 'order.events',
+        aggregateId: order.id,
+        topic: TOPICS.ORDER_EVENTS,
+        eventType: ORDER_EVENTS_TYPE.ORDER_CANCELLED,
+        payload: evenvelope,
+      },
+    })
+    return {
+      orderId: order.id,
+      status: 'CANCELLED',
     }
   })
 }
