@@ -1,4 +1,4 @@
-import { ORDER_EVENTS_TYPE } from '@core/events'
+import { ORDER_EVENTS_TYPE, OrderCancelledEnvelopeSchema } from '@core/events'
 import {
   MAX_ATTEMPTS,
   nextRetryAt,
@@ -16,6 +16,7 @@ const OUTBOX_HANDLERS: Partial<
   Record<keyof typeof ORDER_EVENTS_TYPE, OutboxEventHandler>
 > = {
   ORDER_CONFIRMED: { schema: OrderConfirmedEnvelopeSchema },
+  ORDER_CANCELLED: { schema: OrderCancelledEnvelopeSchema },
 }
 
 function claimOutboxEvents() {
