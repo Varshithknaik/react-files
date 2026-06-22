@@ -18,8 +18,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/node_modules": true,
-    "**/dist": true,
-    "**/*.md": true
+    "**/dist": true
   },
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
