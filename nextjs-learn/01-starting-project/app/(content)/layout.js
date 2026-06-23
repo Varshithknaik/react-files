@@ -8,9 +8,13 @@ export const metadata = {
 
 export default function ContentLayout({ children }) {
   return (
-    <div id="page">
-      <MainHeader />
-      {children}
-    </div>
+    <html lang="en">
+      <body>
+        <div id="page">
+          <MainHeader />
+          {children}
+        </div>
+      </body>
+    </html>
   )
 }
