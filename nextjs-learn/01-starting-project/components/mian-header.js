@@ -18,6 +18,9 @@ export default function MainHeader() {
           <li>
             <NavLink href="/round-robin">Round Robin</NavLink>
           </li>
+          <li>
+            <NavLink href="/height-balancing">Height Balancing</NavLink>
+          </li>
         </ul>
       </nav>
     </header>

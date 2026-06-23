@@ -1,0 +1,23 @@
+
+.header {
+  font-size: 16px;
+  text-align: center;
+}
+
+.container {
+  position: relative;
+  margin: 0 auto;
+  width: 230px;
+}
+
+.item {
+  align-items: center;
+  background-color: #938cf9c7;
+  border-radius: 10px;
+  color: #d9d7e1;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  position: absolute;
+  font-size: 24px;
+}
