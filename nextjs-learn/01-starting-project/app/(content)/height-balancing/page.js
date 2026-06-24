@@ -47,7 +47,7 @@ const arrangeRoundRobin = (pins) => {
   })
 }
 
-export default function RoundRobinPage() {
+export default function HeightRebalancingPage() {
   return (
     <div>
       <h1>Round Robin Placement</h1>

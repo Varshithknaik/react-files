@@ -19,7 +19,7 @@ export default function MainHeader() {
             <NavLink href="/round-robin">Round Robin</NavLink>
           </li>
           <li>
-            <NavLink href="/height-balancing">Height Balancing</NavLink>
+            <NavLink href="/pinterest-feed">Pinterest Feed</NavLink>
           </li>
         </ul>
       </nav>
