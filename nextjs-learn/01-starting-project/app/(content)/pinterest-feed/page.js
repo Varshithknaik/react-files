@@ -1,6 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 
 function calculateLayout(pins, columnWidth, gap, columnHeights) {
   return pins.map((pin) => {
@@ -29,7 +35,7 @@ function preloadImage(url) {
 }
 
 const COL_COUNT = 3
-const COL_WIDTH = 250
+const COL_WIDTH = 300
 const GAP = 12
 
 export default function PinterestFeedPage() {
@@ -43,6 +49,8 @@ export default function PinterestFeedPage() {
   const loadedPinsRef = useRef([])
   const allPinsRef = useRef([])
   const paintPointerRef = useRef(0)
+
+  useLayoutEffect(() => {}, [])
 
   const schedulePaint = useCallback(() => {
     const newlyPainted = []
