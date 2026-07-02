@@ -114,7 +114,7 @@ export async function createOrder(
 export const cancelOrder = async (data: CancelOrderInput) => {
   return await prisma.$transaction(async (tx) => {
     const order = await tx.order.update({
-      where: { id: data.orderId },
+      where: { id: data.orderId, status: 'CONFIRMED' },
       data: { status: 'CANCELLED', version: { increment: 1 } },
       select: {
         id: true,

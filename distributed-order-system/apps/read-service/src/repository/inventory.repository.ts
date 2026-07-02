@@ -154,29 +154,33 @@ export const processProductUpdated = async ({
   const { products } = parsed.data
 
   const result = await InventoryView.bulkWrite(
-    products.map((product) => ({
-      updateOne: {
-        filter: { sku: product.sku, version: { $lt: product.version } },
-        update: {
-          $set: {
-            ...(product.name && { name: product.name }),
-            ...(product.category && { category: product.category }),
-            ...(product.price !== undefined && { price: product.price }),
-            ...(product.offerPrice !== undefined && {
-              offerPrice: product.offerPrice,
-            }),
-            ...(product.stock !== undefined && {
-              stock: product.stock,
-              stockStatus: getStockStatus(product.stock),
-            }),
-            version: product.version,
-            lastEventId: eventId,
-            projectedAt: new Date(),
-            updateAt: new Date(occurredAt),
+    products.map((product) => {
+      const effectivePrice = product.offerPrice ?? product.price
+      return {
+        updateOne: {
+          filter: { sku: product.sku, version: { $lt: product.version } },
+          update: {
+            $set: {
+              ...(product.name && { name: product.name }),
+              ...(product.category && { category: product.category }),
+              ...(product.price !== undefined && { price: product.price }),
+              ...(product.offerPrice !== undefined && {
+                offerPrice: product.offerPrice,
+              }),
+              ...(effectivePrice !== undefined && { effectivePrice }),
+              ...(product.stock !== undefined && {
+                stock: product.stock,
+                stockStatus: getStockStatus(product.stock),
+              }),
+              version: product.version,
+              lastEventId: eventId,
+              projectedAt: new Date(),
+              updatedAt: new Date(occurredAt),
+            },
           },
         },
-      },
-    })),
+      }
+    }),
     { session }
   )
 

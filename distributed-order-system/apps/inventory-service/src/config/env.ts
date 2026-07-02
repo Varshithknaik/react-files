@@ -14,4 +14,5 @@ function requireEnv(name: keyof NodeJS.ProcessEnv) {
 export const env = {
   grpcHost: '0.0.0.0',
   grpcPort: '50052',
+  kafkaBrokers: [requireEnv('KAFKA_BROKERS')],
 }
