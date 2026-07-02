@@ -1,8 +1,24 @@
+import { storePost } from '@/lib/posts'
+
 export default function NewPostPage() {
+  async function createPost(formData) {
+    'use server'
+    const title = formData.get('title')
+    const image = formData.get('image')
+    const content = formData.get('content')
+    console.log(title, image, content)
+
+    storePost({
+      title,
+      imageUrl: '',
+      content,
+      userId: 1,
+    })
+  }
   return (
     <>
       <h1>Create a new post</h1>
-      <form>
+      <form action={createPost}>
         <p className="form-control">
           <label htmlFor="title">Title</label>
           <input type="text" id="title" name="title" />
@@ -26,5 +42,5 @@ export default function NewPostPage() {
         </p>
       </form>
     </>
-  );
+  )
 }

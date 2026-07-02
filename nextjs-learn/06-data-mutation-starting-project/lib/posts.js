@@ -1,6 +1,6 @@
-import sql from 'better-sqlite3';
+import sql from 'better-sqlite3'
 
-const db = new sql('posts.db');
+const db = new sql('posts.db')
 
 function initDb() {
   db.exec(`
@@ -9,7 +9,7 @@ function initDb() {
       first_name TEXT, 
       last_name TEXT,
       email TEXT
-    )`);
+    )`)
   db.exec(`
     CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY, 
@@ -19,7 +19,7 @@ function initDb() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       user_id INTEGER, 
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-    )`);
+    )`)
   db.exec(`
     CREATE TABLE IF NOT EXISTS likes (
       user_id INTEGER, 
@@ -27,31 +27,31 @@ function initDb() {
       PRIMARY KEY(user_id, post_id),
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, 
       FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE
-    )`);
+    )`)
 
   // Creating two dummy users if they don't exist already
-  const stmt = db.prepare('SELECT COUNT(*) AS count FROM users');
+  const stmt = db.prepare('SELECT COUNT(*) AS count FROM users')
 
   if (stmt.get().count === 0) {
     db.exec(`
     INSERT INTO users (first_name, last_name, email)
     VALUES ('John', 'Doe', 'john@example.com')
-  `);
+  `)
 
     db.exec(`
     INSERT INTO users (first_name, last_name, email)
     VALUES ('Max', 'Schwarz', 'max@example.com')
-  `);
+  `)
   }
 }
 
-initDb();
+initDb()
 
 export async function getPosts(maxNumber) {
-  let limitClause = '';
+  let limitClause = ''
 
   if (maxNumber) {
-    limitClause = 'LIMIT ?';
+    limitClause = 'LIMIT ?'
   }
 
   const stmt = db.prepare(`
@@ -61,39 +61,40 @@ export async function getPosts(maxNumber) {
     LEFT JOIN likes ON posts.id = likes.post_id
     GROUP BY posts.id
     ORDER BY createdAt DESC
-    ${limitClause}`);
+    ${limitClause}`)
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return maxNumber ? stmt.all(maxNumber) : stmt.all();
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  return maxNumber ? stmt.all(maxNumber) : stmt.all()
 }
 
 export async function storePost(post) {
+  console.log(post)
   const stmt = db.prepare(`
     INSERT INTO posts (image_url, title, content, user_id)
-    VALUES (?, ?, ?, ?)`);
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return stmt.run(post.imageUrl, post.title, post.content, post.userId);
+    VALUES (?, ?, ?, ?)`)
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  return stmt.run(post.imageUrl, post.title, post.content, post.userId)
 }
 
 export async function updatePostLikeStatus(postId, userId) {
   const stmt = db.prepare(`
     SELECT COUNT(*) AS count
     FROM likes
-    WHERE user_id = ? AND post_id = ?`);
+    WHERE user_id = ? AND post_id = ?`)
 
-  const isLiked = stmt.get(userId, postId).count === 0;
+  const isLiked = stmt.get(userId, postId).count === 0
 
   if (isLiked) {
     const stmt = db.prepare(`
       INSERT INTO likes (user_id, post_id)
-      VALUES (?, ?)`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return stmt.run(userId, postId);
+      VALUES (?, ?)`)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    return stmt.run(userId, postId)
   } else {
     const stmt = db.prepare(`
       DELETE FROM likes
-      WHERE user_id = ? AND post_id = ?`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return stmt.run(userId, postId);
+      WHERE user_id = ? AND post_id = ?`)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    return stmt.run(userId, postId)
   }
 }
