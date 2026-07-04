@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: -apple-system, sans-serif;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+        background: #1a1a2e;
+        color: #eee;
+      }
+      .input-bar {
+        width: 600px;
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: #16213e;
+        border-radius: 12px;
+        align-items: flex-end;
+      }
+      textarea {
+        flex: 1;
+        box-sizing: border-box;
+        padding: 10px 14px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #1a1a2e;
+        color: #eee;
+        font-size: 14px;
+        font-family: inherit;
+        resize: none; /* disable manual resize handle */
+        outline: none;
+        overflow-y: hidden; /* hide scrollbar — we auto-resize instead */
+        min-height: 2px;
+        max-height: 200px; /* cap at ~8 lines */
+        line-height: 1.5;
+      }
+      textarea:focus {
+        border-color: #e94560;
+      }
+      button {
+        padding: 10px 20px;
+        background: #e94560;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        min-height: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="input-bar">
+      <textarea id="input" rows="1" placeholder="Type a message..."></textarea>
+      <button onclick="send()">Send</button>
+    </div>
+    <script>
+      const input = document.getElementById('input');
+      
+      input.addEventListener('input' , autoResize)
+
+      function autoResize(){
+        input.style.height = 'auto'
+        input.style.height = input.scrollHeight + 'px'
+
+        if(input.scrollHeight >200){
+          input.style.overflowY = 'auto'
+        }else{
+          input.style.overflowY = 'hidden'
+        }
+      }
+
+      input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey){
+          e.preventDefault()
+          send()
+        }
+      })
+
+      function send(){
+        const text = input.value.trim()
+        if(!text) return
+        
+        input.value = ''
+        autoResize()
+
+      }
+    </script>
+  </body>
+
+</html>

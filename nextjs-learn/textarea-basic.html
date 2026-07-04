@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: -apple-system, sans-serif;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+        background: #1a1a2e;
+        color: #eee;
+      }
+      .chat-container {
+        width: 600px;
+      }
+      .messages {
+        min-height: 300px;
+        padding: 16px;
+        background: #16213e;
+        border-radius: 12px 12px 0 0;
+        overflow-y: auto;
+      }
+      .message {
+        background: #0f3460;
+        padding: 10px 14px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        max-width: 80%;
+      }
+      .input-bar {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: #16213e;
+        border-radius: 0 0 12px 12px;
+        border-top: 1px solid #0f3460;
+      }
+      textarea {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #1a1a2e;
+        color: #eee;
+        font-size: 14px;
+        font-family: inherit;
+        resize: none;
+        outline: none;
+      }
+      textarea:focus {
+        border-color: #e94560;
+      }
+      button {
+        padding: 10px 20px;
+        background: #e94560;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      button:hover {
+        background: #c73e54;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="messages" id="messages"></div>
+      <div class="input-bar">
+        <textarea
+          id="input"
+          rows="2"
+          placeholder="Type a message..."
+        ></textarea>
+        <button onclick="send()">Send</button>
+      </div>
+    </div>
+
+    <script>
+      const input = document.getElementById('input');
+      const messages = document.getElementById('messages')
+
+      // Send on Enter (Shift+Enter for newline)
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault()
+          send()
+        }
+      })
+
+      function send() {
+        const text = input.value.trim()
+        if (!text) return
+
+        const msg = document.createElement('div')
+        msg.className = 'message'
+        msg.textContent = text // textContent is XSS-safe (no HTML parsing)
+        messages.appendChild(msg)
+        messages.scrollTop = messages.scrollHeight
+
+        input.value = ''
+      }
+    </script>
+  </body>
+</html>
