@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: -apple-system, sans-serif;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+        background: #1a1a2e;
+        color: #eee;
+        box-sizing: border-box;
+      }
+      .input-bar {
+        width: 600px;
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: #16213e;
+        border-radius: 12px;
+        align-items: flex-end;
+      }
+
+      /* The contenteditable div styled to look like a textarea */
+      .editor {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #1a1a2e;
+        color: #eee;
+        font-size: 14px;
+        min-height: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        outline: none;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+      .editor:focus {
+        border-color: #e94560;
+      }
+
+      /* Placeholder using CSS */
+      .editor:empty::before {
+        content: attr(data-placeholder);
+        color: #666;
+        pointer-events: none;
+      }
+
+      button {
+        padding: 10px 20px;
+        background: #e94560;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .output {
+        width: 600px;
+        margin-top: 20px;
+        padding: 16px;
+        background: #16213e;
+        border-radius: 12px;
+      }
+      .output h3 {
+        margin: 0 0 8px;
+        color: #e94560;
+      }
+      .output pre {
+        background: #1a1a2e;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+      
+      .messages {
+        min-height: 300px;
+        padding: 16px;
+        width: 600px;
+        background: rgb(18, 15, 26);
+        border-radius: 12px 12px 0 0;
+        overflow-y: auto;
+      }
+      .message {
+        background: #191931;
+        padding: 10px 14px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        max-width: 80%;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 600px;">
+      <div class="messages" id="messages"></div>
+      <div class="input-bar">
+        <div class="editor" contenteditable="true" data-placeholder="Type a message..." id="editor"></div>
+        <button onclick="send()">Send</button>
+      </div>
+
+      <div class="output">
+        <h3>What content Editable actually stores</h3>
+         <p><strong>text content</strong>(plain text):</p>
+         <pre id="text-output">...</pre>
+
+         <p><strong>inner html</strong>(html):</p>
+         <pre id="html-output">...</pre>
+      </div>
+    </div>
+    <script>
+      const editor = document.getElementById('editor')
+      const messages = document.getElementById('messages')
+      const textContentOutput = document.getElementById('text-output')
+      const htmlOutput = document.getElementById('html-output')
+
+      editor.addEventListener('input', () => {
+        textContentOutput.textContent = editor.textContent
+        htmlOutput.textContent = editor.innerHTML
+      })
+
+      function send() {
+        const text = editor.textContent.trim()
+        if(!text) return
+
+        const msg = document.createElement('div')
+        msg.className = 'message'
+        msg.textContent = text // textContent is XSS-safe (no HTML parsing)
+        messages.appendChild(msg)
+        messages.scrollTop = messages.scrollHeight
+        
+        editor.textContent = ''
+        console.log('sending:', text)
+      }
+
+      editor.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey){
+          e.preventDefault()
+          send()
+        }
+      })
+
+    </script>
+  </body>
+</html>
