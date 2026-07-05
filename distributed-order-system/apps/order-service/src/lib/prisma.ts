@@ -16,12 +16,27 @@ function resolvePath(p: string) {
   return p?.replace('/app', '.')
 }
 
-const caPath = resolvePath(process.env.POSTGRES_CA!)
-const connectionString = `${process.env.ORDER_DB_URL}`
+function createPrismaClient() {
+  const caPath = resolvePath(process.env.POSTGRES_CA!)
+  const connectionString = `${process.env.ORDER_DB_URL}`
 
-const adapter = new PrismaPg({
-  connectionString,
-  ssl: { ca: fs.readFileSync(caPath, 'utf-8'), rejectUnauthorized: false },
-})
+  const adapter = new PrismaPg({
+    connectionString,
+    ssl: { ca: fs.readFileSync(caPath, 'utf-8'), rejectUnauthorized: false },
+  })
 
-export const prisma = new PrismaClient({ adapter })
+  return new PrismaClient({ adapter })
+}
+
+const globalForPrisma = globalThis as unknown as {
+  orderServicePrisma?: PrismaClient
+}
+
+export const prisma =
+  process.env.NODE_ENV === 'production'
+    ? createPrismaClient()
+    : (globalForPrisma.orderServicePrisma ?? createPrismaClient())
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.orderServicePrisma = prisma
+}

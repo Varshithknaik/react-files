@@ -6,6 +6,7 @@ import {
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
 import { cancelOrderSchema, createOrderSchema } from '../schema/order.schema.js'
 import { cancelOrder, createOrder } from '../domain/order.service.js'
+import { toGrpcError } from '../lib/grpc-error.js'
 
 export const orderService: OrderServiceServer = {
   createOrder: async (
@@ -21,7 +22,8 @@ export const orderService: OrderServiceServer = {
       const response = await createOrder(payload.data)
       callback(null, response)
     } catch (error) {
-      callback(error as Error, null as never)
+      const grpcError = toGrpcError(error)
+      callback(grpcError, null as never)
     }
   },
   cancelOrder: async (call, callback) => {
@@ -39,7 +41,8 @@ export const orderService: OrderServiceServer = {
       }
       callback(null, response)
     } catch (error) {
-      callback(error as Error, null as never)
+      const grpcError = toGrpcError(error)
+      callback(grpcError, null as never)
     }
   },
 }

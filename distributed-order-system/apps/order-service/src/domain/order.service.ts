@@ -36,6 +36,7 @@ export async function createOrder(
   return await prisma.$transaction(async (tx) => {
     const order = await tx.order.create({
       data: {
+        id: orderId,
         createdBy: request.userId,
         total,
         status: 'CONFIRMED',
@@ -122,6 +123,7 @@ export const cancelOrder = async (data: CancelOrderInput) => {
         updatedAt: true,
       },
     })
+
     const evenvelope: EventEnvelope<OrderCancelled> = {
       eventId: crypto.randomUUID(),
       eventType: ORDER_EVENTS_TYPE.ORDER_CANCELLED,

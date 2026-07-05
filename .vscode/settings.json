@@ -8,7 +8,9 @@
     "**/node_modules": true,
     "**/bower_components": true,
     "**/*.code-search": true,
-    "**/dist": true
+    "**/dist": true,
+    "**/docs": true,
+    "**/.codex": true
   },
   "files.exclude": {
     "**/.git": true,

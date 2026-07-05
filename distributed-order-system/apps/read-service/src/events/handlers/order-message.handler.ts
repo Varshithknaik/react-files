@@ -42,7 +42,10 @@ export async function processOrderService({
           await processOrderConfirmed({ ...ctx, eventId })
           break
         default:
-          logger.error('[CRITICAL] Unknown event type in READ SERVICE', logCtx)
+          logger.error(
+            `[READ SERVICE - ORDER] unhanled event of ${eventType} type`,
+            logCtx
+          )
       }
     })
   } catch (error) {

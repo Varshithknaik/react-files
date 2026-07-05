@@ -9,7 +9,9 @@
     "**/bower_components": true,
     "**/*.code-search": true,
     "**/dist": true,
-    "**/*.md": true
+    "**/*.md": true,
+    "**/.**": true,
+    "**/graphify-out": true
   },
   "files.exclude": {
     "**/.git": true,
@@ -18,9 +20,11 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/node_modules": true,
-    "**/dist": true
+    "**/dist": true,
+    "**/graphify-out": true
   },
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
-  }
+  },
+  "liveServer.settings.port": 5501
 }
