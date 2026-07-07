@@ -1,5 +1,6 @@
-import { formatDate } from '@/lib/format';
-import LikeButton from './like-icon';
+import { formatDate } from '@/lib/format'
+import LikeButton from './like-icon'
+import { togglePostLikeState } from '@/actions/posts'
 
 function Post({ post }) {
   return (
@@ -19,18 +20,23 @@ function Post({ post }) {
             </p>
           </div>
           <div>
-            <LikeButton />
+            <form
+              action={togglePostLikeState.bind(null, post.id)}
+              className={post.isLiked ? 'liked' : undefined}
+            >
+              <LikeButton />
+            </form>
           </div>
         </header>
         <p>{post.content}</p>
       </div>
     </article>
-  );
+  )
 }
 
 export default function Posts({ posts }) {
   if (!posts || posts.length === 0) {
-    return <p>There are no posts yet. Maybe start sharing some?</p>;
+    return <p>There are no posts yet. Maybe start sharing some?</p>
   }
 
   return (
@@ -41,5 +47,5 @@ export default function Posts({ posts }) {
         </li>
       ))}
     </ul>
-  );
+  )
 }
