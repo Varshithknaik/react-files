@@ -21,12 +21,24 @@ interface EditorSelection {
   // Exact structure to be discussed.
 }
 
+
+// TREE STRUCTURE
 interface EditorNode {}
 
-interface ElementalNode extends EditorNode {
-  children: Array<EditorNode>
-}
+// interface ElementalNode extends EditorNode {
+//   children: Array<EditorNode>
+// }
 
-interface TextNode extends EditorNode {
-  text: string
+// interface TextNode extends EditorNode {
+//   text: string
+// }
+
+//MAP WITH CHILD POINTERS
+
+type NodeKey = string
+
+type NodeMap = Record<NodeKey , EditorNode>
+
+interface ElementNode extends EditorNode {
+  children: Array<NodeKey>
 }
