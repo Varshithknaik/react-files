@@ -1,9 +1,11 @@
+'use client'
+
 import { formatDate } from '@/lib/format'
 import LikeButton from './like-icon'
 import { togglePostLikeState } from '@/actions/posts'
 import { useOptimistic } from 'react'
 
-function Post({ post }) {
+function Post({ post, action }) {
   return (
     <article className="post">
       <div className="post-image">
@@ -22,7 +24,7 @@ function Post({ post }) {
           </div>
           <div>
             <form
-              action={togglePostLikeState.bind(null, post.id)}
+              action={action.bind(null, post.id)}
               className={post.isLiked ? 'liked' : undefined}
             >
               <LikeButton />
@@ -39,21 +41,38 @@ export default function Posts({ posts }) {
   const [optimisticPost, updateOptimisticPost] = useOptimistic(
     posts,
     (prevPosts, updatedPostId) => {
-      return {
-        ...prevPosts,
-        isLiked: !prevPosts.isLiked,
+      const updatedPostIndex = prevPosts.findIndex(
+        (post) => post.id === updatedPostId
+      )
+
+      if (updatedPostIndex === -1) {
+        console.warn('Post not found', updatedPostId)
+        return prevPosts
       }
+
+      const updatedPost = { ...prevPosts[updatedPostIndex] }
+      updatedPost.likes = updatedPost.likes + (updatedPost.isLiked ? -1 : 1)
+      updatedPost.isLiked = !updatedPost.isLiked
+
+      const newPosts = [...prevPosts]
+      newPosts[updatedPostIndex] = updatedPost
+      return newPosts
     }
   )
   if (!optimisticPost || optimisticPost.length === 0) {
     return <p>There are no posts yet. Maybe start sharing some?</p>
   }
 
+  async function updatePost(postId) {
+    updateOptimisticPost(postId)
+    await togglePostLikeState(postId)
+  }
+
   return (
     <ul className="posts">
       {optimisticPost.map((post) => (
         <li key={post.id}>
-          <Post post={post} />
+          <Post post={post} action={updatePost} />
         </li>
       ))}
     </ul>
