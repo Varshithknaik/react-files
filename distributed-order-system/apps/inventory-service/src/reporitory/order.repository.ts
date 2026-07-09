@@ -1,6 +1,5 @@
 import { OrderCancelledPayloadSchema } from '@core/events'
-import { Prisma } from '@prisma/client/extension'
-import { ReservationStatus } from '@prisma/client-inventory-service'
+import { ReservationStatus, Prisma } from '@prisma/client-inventory-service'
 
 interface ProcessOrderCancelledProps {
   payload: unknown
@@ -21,20 +20,35 @@ export const processOrderCancelled = async ({
 
   const { orderId, version, updatedAt } = parsed.data
 
-  // Find all the reservation matching the pending and confirmed states
-  const reservations = await tx.reservations.findMany({
-    where: {
-      orderId: orderId,
-      status: {
-        in: [ReservationStatus.PENDING, ReservationStatus.CONFIRMED],
-      },
-    },
-    select: {
-      sku: true,
-      quantity: true,
-    },
-  })
+  const res = await tx.$queryRaw`
+    WITH cancelled AS (
+      UPDATE "Reservations"
+      SET 
+        status = ${ReservationStatus.CANCELLED},
+        "updated_at" = NOW()
+      WHERE
+        "order_id" = ${orderId}
+        AND status IN (
+          ${ReservationStatus.PENDING},
+          ${ReservationStatus.CONFIRMED}
+        )
+        RETURNING sku, quantity
+    ),
+    totals AS (
+      SELECT sku, SUM(quantity)::int as quantity
+      FROM cancelled
+      GROUP BY sku
+    )
 
-  console.log(reservations, 'resilver')
+    UPDATE "Products" p
+    SET
+      stock = p.stock + t.quantity,
+      "updated_at" = NOW(),
+      version = p.version +   1
+    FROM totals t
+    WHERE p.sku = t.sku
+  `
+
+  console.log(res, 'resilver')
   throw new Error('Not completed')
 }

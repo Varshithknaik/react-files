@@ -1,6 +1,7 @@
 import { formatDate } from '@/lib/format'
 import LikeButton from './like-icon'
 import { togglePostLikeState } from '@/actions/posts'
+import { useOptimistic } from 'react'
 
 function Post({ post }) {
   return (
@@ -35,13 +36,22 @@ function Post({ post }) {
 }
 
 export default function Posts({ posts }) {
-  if (!posts || posts.length === 0) {
+  const [optimisticPost, updateOptimisticPost] = useOptimistic(
+    posts,
+    (prevPosts, updatedPostId) => {
+      return {
+        ...prevPosts,
+        isLiked: !prevPosts.isLiked,
+      }
+    }
+  )
+  if (!optimisticPost || optimisticPost.length === 0) {
     return <p>There are no posts yet. Maybe start sharing some?</p>
   }
 
   return (
     <ul className="posts">
-      {posts.map((post) => (
+      {optimisticPost.map((post) => (
         <li key={post.id}>
           <Post post={post} />
         </li>

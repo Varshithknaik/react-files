@@ -304,21 +304,40 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
         })),
       })
 
-      const caseStatement = requestedItems.map(
-        (item) => Prisma.sql`WHEN ${item.sku} THEN ${item.quantity}::int`
+      // const caseStatement = requestedItems.map(
+      //   (item) => Prisma.sql`WHEN ${item.sku} THEN ${item.quantity}::int`
+      // )
+
+      // const query = Prisma.sql`
+      //   UPDATE "Products"
+      //   SET
+      //     stock = stock - CASE sku
+      //       ${Prisma.join(caseStatement)}
+      //       ELSE 0
+      //     END,
+      //     version = version + 1
+      //   WHERE sku IN (${Prisma.join(requestedSkus)})
+      // `
+      // await tx.$executeRaw(query)
+
+      const values = Prisma.join(
+        requestedItems.map(
+          ({ sku, quantity }) => Prisma.sql`(${sku},${quantity})`
+        )
       )
 
-      const query = Prisma.sql`
-        UPDATE "Products"
+      console.log(values)
+
+      await tx.$executeRaw`
+        UPDATE "Products" p
         SET
-          stock = stock - CASE sku
-            ${Prisma.join(caseStatement)}
-            ELSE 0
-          END,
-          version = version + 1
-        WHERE sku IN (${Prisma.join(requestedSkus)})
+          stock = p.stock - v.quantity,
+          version = p.version + 1
+          FROM (
+            VALUES ${values}
+          ) AS v(sku, quantity)
+          WHERE p.sku = v.sku
       `
-      await tx.$executeRaw(query)
 
       const envelope: EventEnvelope<InventoryStockReserved> = {
         eventId: crypto.randomUUID(),

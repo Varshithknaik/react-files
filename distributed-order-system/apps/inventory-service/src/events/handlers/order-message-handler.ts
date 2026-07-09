@@ -29,6 +29,7 @@ export const processOrderService = async ({
         },
       })
       switch (eventType) {
+        // TODO: have to handle the postgres errors here
         case ORDER_EVENTS_TYPE.ORDER_CANCELLED:
           console.log('order is cancelled')
           await processOrderCancelled({
@@ -43,7 +44,8 @@ export const processOrderService = async ({
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_) {
+  } catch (error) {
+    console.log(error)
     logger.info(
       '[IDEMPOTENT] Event already processed in INVENTORY SERVICE - ORDER'
     )

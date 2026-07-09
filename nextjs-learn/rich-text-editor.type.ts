@@ -23,7 +23,7 @@ interface EditorSelection {
 
 
 // TREE STRUCTURE
-interface EditorNode {}
+// interface EditorNode {}
 
 // interface ElementalNode extends EditorNode {
 //   children: Array<EditorNode>
@@ -37,8 +37,18 @@ interface EditorNode {}
 
 type NodeKey = string
 
+interface EditorNode {
+  parent: NodeKey | null;
+  prev: NodeKey | null;
+  next: NodeKey | null
+}
+
 type NodeMap = Record<NodeKey , EditorNode>
 
 interface ElementNode extends EditorNode {
   children: Array<NodeKey>
+}
+
+interface TextNode extends EditorNode {
+  text: string
 }

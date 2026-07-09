@@ -68,5 +68,3 @@ gcloud run jobs execute replay-order \
 ```
 
 Note: We have to use the image that has the event replay code.
-
-/Users/varshithk/Documents/react-files/distributed-order-system/docs/implementation_status.md
