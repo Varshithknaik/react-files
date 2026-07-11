@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { resolve } from 'styled-jsx/css'
 
 function calculateLayout(pins, columnWidth, gap, columnHeights) {
   return pins.map((pin) => {
@@ -35,7 +36,7 @@ function preloadImage(url) {
 }
 
 const COL_COUNT = 3
-const COL_WIDTH = 300
+const DEFAULT_COL_WIDTH = 300
 const GAP = 12
 
 export default function PinterestFeedPage() {
@@ -44,13 +45,20 @@ export default function PinterestFeedPage() {
 
   const sentinelRef = useRef()
   const hasMoreRef = useRef(true)
-  const page = useRef(0)
+  const pageRef = useRef(0)
   const columnHeights = useRef([])
   const loadedPinsRef = useRef([])
   const allPinsRef = useRef([])
   const paintPointerRef = useRef(0)
+  const loadingRef = useRef(false)
 
-  useLayoutEffect(() => {}, [])
+  //
+  const containerRef = useRef()
+  const intersectionObserverRef = useRef()
+
+  useLayoutEffect(() => {
+    console.log(containerRef.current?.clientWidth)
+  }, [])
 
   const schedulePaint = useCallback(() => {
     const newlyPainted = []
@@ -68,16 +76,21 @@ export default function PinterestFeedPage() {
   })
 
   const loadBatch = useCallback(async () => {
-    if (loading || !hasMoreRef.current) return
+    if (loadingRef.current || !hasMoreRef.current) return
 
+    loadingRef.current = true
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/pins?page=${page.current}`)
+      const response = await fetch(`/api/pins?page=${pageRef.current}`)
       const { pins } = await response.json()
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       if (pins.length === 0) {
         hasMoreRef.current = false
+        if (intersectionObserverRef.current) {
+          intersectionObserverRef.current.disconnect()
+        }
         return
       }
 
@@ -85,9 +98,12 @@ export default function PinterestFeedPage() {
         columnHeights.current = new Array(COL_COUNT).fill(0)
       }
 
+      const colWidth =
+        containerRef.current?.clientWidth / COL_COUNT || DEFAULT_COL_WIDTH
+
       const layoutPins = calculateLayout(
         pins,
-        COL_WIDTH,
+        colWidth,
         GAP,
         columnHeights.current
       )
@@ -108,54 +124,87 @@ export default function PinterestFeedPage() {
           schedulePaint()
         })
       })
-
-      page.current++
-      setLoading(false)
+      pageRef.current++
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
+      loadingRef.current = false
+    }
+  }, [])
+
+  const handleIntersection = useCallback((entries) => {
+    const entry = entries[0]
+    if (entry.isIntersecting) {
+      loadBatch()
+      console.log('intersection')
     }
   }, [])
 
   useEffect(() => {
+    intersectionObserverRef.current = new IntersectionObserver(
+      handleIntersection,
+      {
+        rootMargin: '0px',
+      }
+    )
+    if (sentinelRef.current) {
+      intersectionObserverRef.current.observe(sentinelRef.current)
+    }
+
     loadBatch()
-  }, [])
+
+    return () => intersectionObserverRef.current.disconnect()
+  }, [handleIntersection])
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        marginBlock: 'auto',
-        width: '100%',
-        minHeight: '100vh',
-      }}
-    >
-      {paintedPins.map((pin) => (
-        <div
-          key={pin.id}
-          style={{
-            transition: 'opacity 0.3s ease',
-            position: 'absolute',
-            display: 'flex',
-            flexShrink: 0,
-            left: pin.left,
-            top: pin.top,
-            width: pin.width,
-            height: pin.height,
-            opacity: loadedPinsRef.current[pin.id] ? 1 : 0,
-          }}
-        >
-          <img
-            src={pin.url}
-            alt={pin.alt}
-            style={{ width: '100%', borderRadius: 16, display: 'block' }}
-          />
-        </div>
-      ))}
+    <>
       <div
-        ref={sentinelRef}
-        style={{ height: '1px', width: '100%', background: 'transparent' }}
-      />
-      {loading && <p>Loading more...</p>}
-    </div>
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: Math.max(...columnHeights.current),
+        }}
+      >
+        {paintedPins.map((pin) => (
+          <div
+            key={pin.id}
+            style={{
+              transition: 'opacity 0.3s ease',
+              position: 'absolute',
+              display: 'flex',
+              flexShrink: 0,
+              left: pin.left,
+              top: pin.top,
+              width: pin.width,
+              height: pin.height,
+              opacity: loadedPinsRef.current[pin.id] ? 1 : 0,
+            }}
+          >
+            <img
+              src={pin.url}
+              alt={pin.alt}
+              style={{ width: '100%', borderRadius: 16, display: 'block' }}
+            />
+          </div>
+        ))}
+        <div
+          ref={sentinelRef}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            height: '1px',
+            width: '100%',
+            background: 'transparent',
+          }}
+        />
+      </div>
+      {loading && (
+        <div>
+          <p>Loading more...</p>
+        </div>
+      )}
+    </>
   )
 }
