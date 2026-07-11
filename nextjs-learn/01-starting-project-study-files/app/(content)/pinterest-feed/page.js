@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { resolve } from 'styled-jsx/css'
 
 function calculateLayout(pins, columnWidth, gap, columnHeights) {
   return pins.map((pin) => {
@@ -179,7 +178,7 @@ export default function PinterestFeedPage() {
               top: pin.top,
               width: pin.width,
               height: pin.height,
-              opacity: loadedPinsRef.current[pin.id] ? 1 : 0,
+              // opacity: loadedPinsRef.current[pin.id] ? 1 : 0,
             }}
           >
             <img
