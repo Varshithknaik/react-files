@@ -1,11 +1,12 @@
 export default async function MessagesLayout({ children }) {
-  const response = await fetch('http://localhost:8080/messages', {
+  const response = await fetch('http://localhost:9090/messages', {
+    cahce: 'force-cache',
     headers: {
       'X-ID': 'layout',
     },
-  });
-  const messages = await response.json();
-  const totalMessages = messages.length;
+  })
+  const messages = await response.json()
+  const totalMessages = messages.length
 
   return (
     <>
@@ -14,5 +15,5 @@ export default async function MessagesLayout({ children }) {
       <hr />
       {children}
     </>
-  );
+  )
 }
