@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -158,6 +159,31 @@ export default function PinterestFeedPage() {
     return () => intersectionObserverRef.current.disconnect()
   }, [handleIntersection])
 
+  const skeletonPins = useMemo(() => {
+    if (!loading) return []
+
+    const pins = Array.from({ length: 6 }).map((_, i) => ({
+      id: `skeleton-${i}`,
+      height: 250 + Math.random() * 200,
+      isSkeleton: true,
+    }))
+
+    const colWidth =
+      containerRef.current?.clientWidth / COL_COUNT || DEFAULT_COL_WIDTH
+    const fakePinsColumnHeights =
+      columnHeights.current && columnHeights.current.length
+        ? [...columnHeights.current]
+        : new Array(COL_COUNT).fill(0)
+
+    return calculateLayout(pins, colWidth, GAP, fakePinsColumnHeights)
+  }, [loading])
+
+  const allVisiblePins = useMemo(() => {
+    return [...paintedPins, ...skeletonPins]
+  }, [skeletonPins, paintedPins])
+
+  console.log()
+
   return (
     <>
       <div
@@ -168,7 +194,7 @@ export default function PinterestFeedPage() {
           height: Math.max(...columnHeights.current),
         }}
       >
-        {paintedPins.map((pin) => (
+        {allVisiblePins.map((pin) => (
           <div
             key={pin.id}
             style={{
@@ -179,29 +205,44 @@ export default function PinterestFeedPage() {
               top: pin.top,
               width: pin.width,
               height: pin.height,
-              backgroundColor: '#e2e8f0',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' /%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-              backgroundSize: '48px',
               borderRadius: '1rem',
               overflow: 'hidden',
             }}
           >
-            <img
-              src={pin.url}
-              alt={pin.alt}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-                opacity: 0,
-                transition: 'opacity 0.3s ease',
-              }}
-              onLoad={(e) => (e.currentTarget.style.opacity = 1)}
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
+            {pin.isSkeleton ? (
+              <div
+                style={{
+                  backgroundColor: '#e2e8f0',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '1rem',
+                }}
+              />
+            ) : (
+              <img
+                src={pin.url}
+                alt={pin.alt}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+                onLoad={(e) => (e.currentTarget.style.opacity = 1)}
+                onError={(e) => {
+                  // prevent infinite loop if fallback image also fails
+                  if (!e.currentTarget.dataset.fallbackApplied) {
+                    e.currentTarget.dataset.fallbackApplied = true
+                    ;((e.currentTarget.src =
+                      'https://images.unsplash.com/photo-1517457374969-3d960c1b358d?w=500&h=500&fit=crop'),
+                      (e.currentTarget.alt = 'Image Unavailable'),
+                      (e.currentTarget.style.opacity = 1))
+                  }
+                }}
+              />
+            )}
           </div>
         ))}
         <div
@@ -215,11 +256,6 @@ export default function PinterestFeedPage() {
           }}
         />
       </div>
-      {loading && (
-        <div>
-          <p>Loading more...</p>
-        </div>
-      )}
     </>
   )
 }
