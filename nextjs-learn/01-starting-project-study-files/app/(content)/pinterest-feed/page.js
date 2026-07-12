@@ -118,10 +118,12 @@ export default function PinterestFeedPage() {
       layoutPins.forEach((pin, index) => {
         const globalIndex = offset + index
 
-        preloadImage(pin.url).then(() => {
-          loadedPinsRef.current[globalIndex] = true
-          schedulePaint()
-        })
+        preloadImage(pin.url)
+          .catch(() => console.log('fail to load the image'))
+          .finally(() => {
+            loadedPinsRef.current[globalIndex] = true
+            schedulePaint()
+          })
       })
       pageRef.current++
     } catch (error) {
@@ -170,7 +172,6 @@ export default function PinterestFeedPage() {
           <div
             key={pin.id}
             style={{
-              transition: 'opacity 0.3s ease',
               position: 'absolute',
               display: 'flex',
               flexShrink: 0,
@@ -178,13 +179,28 @@ export default function PinterestFeedPage() {
               top: pin.top,
               width: pin.width,
               height: pin.height,
-              // opacity: loadedPinsRef.current[pin.id] ? 1 : 0,
+              backgroundColor: '#e2e8f0',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' /%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              backgroundSize: '48px',
+              borderRadius: '1rem',
+              overflow: 'hidden',
             }}
           >
             <img
               src={pin.url}
               alt={pin.alt}
-              style={{ width: '100%', borderRadius: 16, display: 'block' }}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                opacity: 0,
+                transition: 'opacity 0.3s ease',
+              }}
+              onLoad={(e) => (e.currentTarget.style.opacity = 1)}
+              onError={(e) => (e.currentTarget.style.display = 'none')}
             />
           </div>
         ))}

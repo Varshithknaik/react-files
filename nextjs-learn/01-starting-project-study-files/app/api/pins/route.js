@@ -54,6 +54,12 @@ const MOCK_PINS = [
     height: 340,
   },
   {
+    id: 10,
+    url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b471?w=400',
+    alt: 'Mountain lake at sunset',
+    height: 280,
+  },
+  {
     id: 11,
     url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400',
     alt: 'Sunlit mountain meadow',
