@@ -21,6 +21,9 @@ export default function MainHeader() {
           <li>
             <NavLink href="/pinterest-feed">Pinterest Feed</NavLink>
           </li>
+          <li>
+            <NavLink href="/responsive-masonry">Responsive Masonry</NavLink>
+          </li>
         </ul>
       </nav>
     </header>

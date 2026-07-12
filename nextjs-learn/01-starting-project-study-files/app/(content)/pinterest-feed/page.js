@@ -35,13 +35,17 @@ function preloadImage(url) {
   })
 }
 
-const COL_COUNT = 3
+const MIN_COL_COUNT = 3
 const DEFAULT_COL_WIDTH = 300
 const GAP = 12
 
 export default function PinterestFeedPage() {
   const [paintedPins, setPainetedPins] = useState([])
   const [loading, setLoading] = useState(false)
+
+  //
+  const [colCount, setColCount] = useState(MIN_COL_COUNT)
+  const [colWidth, setColWidth] = useState(DEFAULT_COL_WIDTH)
 
   const sentinelRef = useRef()
   const hasMoreRef = useRef(true)
@@ -57,7 +61,28 @@ export default function PinterestFeedPage() {
   const intersectionObserverRef = useRef()
 
   useLayoutEffect(() => {
-    console.log(containerRef.current?.clientWidth)
+    if (!containerRef.current) return
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      const containerWidth = entry.contentRect.width
+
+      const count = Math.max(
+        1,
+        Math.floor((containerWidth + GAP) / (DEFAULT_COL_WIDTH + GAP))
+      )
+
+      const width = (containerWidth - (count - 1) * GAP) / count
+
+      console.log({ count, width }, 'cpl', containerWidth)
+
+      setColCount(count)
+      setColWidth(width)
+    })
+
+    observer.observe(containerRef.current)
+
+    return () => observer.disconnect()
   }, [])
 
   const schedulePaint = useCallback(() => {
@@ -94,13 +119,6 @@ export default function PinterestFeedPage() {
         return
       }
 
-      if (columnHeights.current.length === 0) {
-        columnHeights.current = new Array(COL_COUNT).fill(0)
-      }
-
-      const colWidth =
-        containerRef.current?.clientWidth / COL_COUNT || DEFAULT_COL_WIDTH
-
       const layoutPins = calculateLayout(
         pins,
         colWidth,
@@ -133,28 +151,49 @@ export default function PinterestFeedPage() {
       setLoading(false)
       loadingRef.current = false
     }
-  }, [])
+  }, [colCount, colWidth])
 
-  const handleIntersection = useCallback((entries) => {
-    const entry = entries[0]
-    if (entry.isIntersecting) {
-      loadBatch()
-      console.log('intersection')
-    }
-  }, [])
+  const handleIntersection = useCallback(
+    (entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting) {
+        loadBatch()
+      }
+    },
+    [loadBatch]
+  )
+
+  useEffect(() => {
+    columnHeights.current = new Array(colCount).fill(0)
+
+    console.log('width', colWidth)
+
+    const recalculatedValue = calculateLayout(
+      allPinsRef.current,
+      colWidth,
+      GAP,
+      columnHeights.current
+    )
+
+    allPinsRef.current = recalculatedValue
+
+    const visiblePins = recalculatedValue.filter(
+      (_, idx) => loadedPinsRef.current[idx]
+    )
+
+    setPainetedPins(visiblePins)
+  }, [colCount, colWidth])
 
   useEffect(() => {
     intersectionObserverRef.current = new IntersectionObserver(
       handleIntersection,
       {
-        rootMargin: '0px',
+        rootMargin: '200px',
       }
     )
     if (sentinelRef.current) {
       intersectionObserverRef.current.observe(sentinelRef.current)
     }
-
-    loadBatch()
 
     return () => intersectionObserverRef.current.disconnect()
   }, [handleIntersection])
@@ -162,27 +201,30 @@ export default function PinterestFeedPage() {
   const skeletonPins = useMemo(() => {
     if (!loading) return []
 
-    const pins = Array.from({ length: 6 }).map((_, i) => ({
+    const pins = Array.from({ length: 12 }).map((_, i) => ({
       id: `skeleton-${i}`,
       height: 250 + Math.random() * 200,
       isSkeleton: true,
     }))
 
-    const colWidth =
-      containerRef.current?.clientWidth / COL_COUNT || DEFAULT_COL_WIDTH
+    console.log('skeleton width', colWidth)
+
+    const copyColumnHeights = [...columnHeights.current].slice(
+      0,
+      paintPointerRef.current ?? 0
+    )
+
     const fakePinsColumnHeights =
-      columnHeights.current && columnHeights.current.length
-        ? [...columnHeights.current]
-        : new Array(COL_COUNT).fill(0)
+      copyColumnHeights && copyColumnHeights.length
+        ? [...copyColumnHeights]
+        : new Array(colCount).fill(0)
 
     return calculateLayout(pins, colWidth, GAP, fakePinsColumnHeights)
-  }, [loading])
+  }, [loading, colCount, colWidth])
 
   const allVisiblePins = useMemo(() => {
     return [...paintedPins, ...skeletonPins]
   }, [skeletonPins, paintedPins])
-
-  console.log()
 
   return (
     <>
