@@ -16,6 +16,7 @@ function calculateLayout(pins, columnWidth, gap, columnHeights) {
     }
   })
 }
-export default function () {
+
+export default function ResponsiveMasonryPage() {
   return <>Responsive</>
 }
