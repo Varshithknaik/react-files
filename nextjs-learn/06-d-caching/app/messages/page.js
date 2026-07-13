@@ -6,15 +6,19 @@ import Messages from '@/components/messages'
 // export const dynamic = 'force-static' // auto is default value , force-dynamic or force-static , force-dynamic is same as no-store
 // 'force-static' means build time
 // 'force-dynamic' means run time
+export const dynamic = 'force-dynamic'
 
 export default async function MessagesPage() {
-  noStore()
+  // noStore()
 
   const response = await fetch('http://localhost:9090/messages', {
     // cache: 'no-store', // force-cache , no-store
     // next: {
     //   revalidate: 5,
     // },
+    next: {
+      tags: ['msg'],
+    },
     headers: {
       'X-ID': 'page',
     },

@@ -1,14 +1,16 @@
-import { redirect } from 'next/navigation';
+import { redirect } from 'next/navigation'
 
-import { addMessage } from '@/lib/messages';
+import { addMessage } from '@/lib/messages'
+import { revalidatePath } from 'next/cache'
 
 export default function NewMessagePage() {
   async function createMessage(formData) {
-    'use server';
+    'use server'
 
-    const message = formData.get('message');
-    addMessage(message);
-    redirect('/messages');
+    const message = formData.get('message')
+    addMessage(message)
+    revalidatePath('msg')
+    redirect('/messages')
   }
 
   return (
@@ -25,5 +27,5 @@ export default function NewMessagePage() {
         </p>
       </form>
     </>
-  );
+  )
 }
