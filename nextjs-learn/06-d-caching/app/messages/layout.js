@@ -1,11 +1,7 @@
+import { getMessages } from '@/lib/messages'
+
 export default async function MessagesLayout({ children }) {
-  const response = await fetch('http://localhost:9090/messages', {
-    cahce: 'force-cache',
-    headers: {
-      'X-ID': 'layout',
-    },
-  })
-  const messages = await response.json()
+  const messages = await getMessages()
   const totalMessages = messages.length
 
   return (
