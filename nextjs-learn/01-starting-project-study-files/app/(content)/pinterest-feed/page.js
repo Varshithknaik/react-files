@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { MasonryComponent } from './component/Masonry.component'
 
 function calculateLayout(pins, columnWidth, gap, columnHeights) {
   return pins.map((pin) => {
@@ -156,6 +157,7 @@ export default function PinterestFeedPage() {
   const handleIntersection = useCallback(
     (entries) => {
       const entry = entries[0]
+      console.log('inter')
       if (entry.isIntersecting) {
         loadBatch()
       }
@@ -165,8 +167,6 @@ export default function PinterestFeedPage() {
 
   useEffect(() => {
     columnHeights.current = new Array(colCount).fill(0)
-
-    console.log('width', colWidth)
 
     const recalculatedValue = calculateLayout(
       allPinsRef.current,
@@ -188,7 +188,7 @@ export default function PinterestFeedPage() {
     intersectionObserverRef.current = new IntersectionObserver(
       handleIntersection,
       {
-        rootMargin: '200px',
+        rootMargin: '400px',
       }
     )
     if (sentinelRef.current) {
@@ -233,59 +233,12 @@ export default function PinterestFeedPage() {
         style={{
           position: 'relative',
           width: '100%',
+          minHeight: '100vh',
           height: Math.max(...columnHeights.current),
         }}
       >
         {allVisiblePins.map((pin) => (
-          <div
-            key={pin.id}
-            style={{
-              position: 'absolute',
-              display: 'flex',
-              flexShrink: 0,
-              left: pin.left,
-              top: pin.top,
-              width: pin.width,
-              height: pin.height,
-              borderRadius: '1rem',
-              overflow: 'hidden',
-            }}
-          >
-            {pin.isSkeleton ? (
-              <div
-                style={{
-                  backgroundColor: '#e2e8f0',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '1rem',
-                }}
-              />
-            ) : (
-              <img
-                src={pin.url}
-                alt={pin.alt}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                  opacity: 0,
-                  transition: 'opacity 0.3s ease',
-                }}
-                onLoad={(e) => (e.currentTarget.style.opacity = 1)}
-                onError={(e) => {
-                  // prevent infinite loop if fallback image also fails
-                  if (!e.currentTarget.dataset.fallbackApplied) {
-                    e.currentTarget.dataset.fallbackApplied = true
-                    ;((e.currentTarget.src =
-                      'https://images.unsplash.com/photo-1517457374969-3d960c1b358d?w=500&h=500&fit=crop'),
-                      (e.currentTarget.alt = 'Image Unavailable'),
-                      (e.currentTarget.style.opacity = 1))
-                  }
-                }}
-              />
-            )}
-          </div>
+          <MasonryComponent key={pin.id} pin={pin} />
         ))}
         <div
           ref={sentinelRef}
