@@ -98,6 +98,31 @@
       font-size: 12px;
     }
 
+    .attached-files {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 12px;
+      margin-bottom: -4px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: #0f3460;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #8ec5fc;
+    }
+
+    .file-chip .remove {
+      cursor: pointer;
+      color: #e94560;
+      font-weight: bold;
+    }
+
     .output {
       margin-top: 1rem;
       padding: 0.75rem;
@@ -162,7 +187,6 @@
 
       const cursorPos = textarea.selectionStart
       const textBeforeCursor = textarea.value.slice(0, cursorPos)
-      console.log(textBeforeCursor, cursorPos)
 
       const match = textBeforeCursor.match(/(^|[\s])@(\w*)$/)
       if (match) {
@@ -214,6 +238,22 @@
         /(^|[\s])@\w*$/,
         `$1@${file.name} `
       )
+
+      textarea.value = newBefore + textAfterCursor
+
+      const newCursorPos = newBefore.length;
+
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      textarea.focus();
+
+      if (!attachedFiles.find((f) => f.id === file.id)) {
+        attachedFiles.push(file)
+        renderAttachedFiles()
+      }
+
+      hidePopover()
+      autoResize()
+
     }
 
     function showPopover(files) {
@@ -232,7 +272,7 @@
       popover.innerHTML = files.map(
         (f, i) => `
          <div class="mention-item ${i === activeIndex ? 'active' : ''}"
-             onmousedown="selectMention(FILES.find(x => x.id === ${f.id}))">
+             onmousedown="event.preventDefault();selectMention(FILES.find(x => x.id === ${f.id}))">
           <span class="icon">${f.icon}</span>
           <div>
             <div class="name">${f.name}</div>
@@ -243,18 +283,41 @@
       ).join('')
     }
 
+    function renderAttachedFiles() {
+      attachedFile.innerHTML = attachedFiles.map(f =>
+        `
+        <span class="file-chip">
+          ${f.icon} ${f.name}
+          <span class="remove" onclick="removeFile(${f.id})">✕</span>
+        </span>
+        `
+      ).join('');
+    }
+
+    function removeFile(id) {
+      attachedFiles = attachedFiles.filter(f => f.id !== id);
+      console.log(attachedFiles)
+      renderAttachedFiles();
+    }
+
     function send() {
-      const text = textarea.value.trim()
+      const text = input.value.trim()
       if (!text) return
 
       const payload = {
         message: text,
+        context_files: attachedFiles.map((f) => ({
+          id: f.id,
+          name: f.name,
+        })),
       }
 
       payloadEl.textContent = JSON.stringify(payload, null, 2)
 
-      //Reset
-      textarea.value = ''
+      // Reset
+      input.value = ''
+      attachedFiles = []
+      renderAttachedFiles()
       autoResize()
     }
   </script>
