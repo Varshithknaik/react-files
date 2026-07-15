@@ -1,75 +1,263 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-  <head>
-    <style>
-      body{
-        font-family: -apple-system, sans-serif;
-        display: flex;
-        justify-content: center;
-        padding: 40px;
-        background-color: #1a1a2e;
-        color: #eee;
-      }
 
-      .chat-container{
-        width: 600px;
-      }
-      .input-wrapper{
-        display: flex;
-        gap: 1rem;
-        gap:0.5rem;
-        padding: 12px;
-        background: #16213e;
-        border-radius: 12px;
-        align-items: flex-end;
-      }
+<head>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+      background-color: #1a1a2e;
+      color: #eee;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      height: 100vh;
+    }
 
-      textarea{
-        flex: 1;
-        padding: 10px 14px;
-        border: 1px solid #333;
-        border-radius: 0.5rem;
-        background: rgb(27, 26, 26);
-        color: #eee;
-        font-size: 14px;
-        font-family: inherit;
-        resize: none;
-        outline: none;
-        overflow-y: auto;
-      }
+    .chat-container {
+      width: 600px;
+    }
 
-      textarea:focus{
-        border-color: rgb(177, 32, 138);
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      gap: 1rem;
+      gap: 0.5rem;
+      padding: 12px;
+      background: #16213e;
+      border-radius: 12px;
+      align-items: flex-end;
+    }
 
-      }
+    textarea {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #333;
+      border-radius: 0.5rem;
+      background: rgb(27, 26, 26);
+      color: #eee;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      overflow-y: auto;
+      min-height: 2.5rem;
+      box-sizing: border-box;
+    }
 
-      button{
-        padding: 10px 20px;
-        background: rgba(217, 14, 44, 0.819);
-        border-radius: 8px;
-        border: 0;
-        cursor: pointer;
-        color: white;
-        
-      }
-    </style>
+    textarea:focus {
+      border-color: rgb(177, 32, 138);
+    }
 
-  </head>
-  <body>
-    <div class="chat-container">
-      <div class="attached-files" id="attached-files">
-      </div>
-      <div class="input-wrapper">
-        <div class="mention-popover" id='popover'>
+    button {
+      padding: 10px 20px;
+      background: rgba(217, 14, 44, 0.819);
+      border-radius: 8px;
+      border: 0;
+      cursor: pointer;
+      color: white;
+    }
 
-        </div>
-        <textarea id="input" rows="1" placeholder="Type @ to mention a file"></textarea>
-        <button onclick="send()">Send =></button>
-      </div>
-      <div>
-        <strong>What gets send to backend:</strong>\
-        <pre id="payload">Hit send to see</pre>
-      </div>
+    .mention-popover {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 12px;
+    }
+
+    .mention-popover.visible {
+      display: block;
+    }
+
+    .mention-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .mention-item:hover,
+    .mention-item.active {
+      background: #0f3460;
+    }
+
+    .mention-item .icon {
+      font-size: 18px;
+    }
+
+    .mention-item .name {
+      color: #eee;
+    }
+
+    .mention-item .desc {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .output {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background-color: #16213e;
+      border-radius: 0.5rem;
+      font-size: 14px;
+    }
+
+    .output pre {
+      margin: 4px 0;
+      background: #1a1a2e;
+      padding: 8px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="attached-files" id="attached-files"></div>
+    <div class="input-wrapper">
+      <div class="mention-popover" id="popover"></div>
+      <textarea id="input" rows="1" placeholder="Type @ to mention a file"></textarea>
+      <button onclick="send()">Send =></button>
     </div>
-  </body>
+    <div class="output" id="output">
+      <strong>What gets send to backend:</strong>
+      <pre id="payload">Hit send to see</pre>
+    </div>
+  </div>
+
+  <script>
+    const FILES = [
+      { id: 1, name: 'schema.sql', icon: '🗄️', desc: 'Database schema' },
+      { id: 2, name: 'app.js', icon: '📄', desc: 'Main application' },
+      { id: 3, name: 'package.json', icon: '📦', desc: 'Dependencies' },
+      { id: 4, name: 'styles.css', icon: '🎨', desc: 'Global styles' },
+      { id: 5, name: 'README.md', icon: '📖', desc: 'Documentation' },
+      { id: 6, name: 'server.js', icon: '🖥️', desc: 'Express server' },
+      { id: 7, name: '.env', icon: '🔒', desc: 'Environment vars' },
+      { id: 8, name: 'utils.js', icon: '🔧', desc: 'Helper functions' },
+    ]
+
+    const textarea = document.getElementById('input')
+    const popover = document.getElementById('popover')
+    const output = document.getElementById('output')
+    const attachedFile = document.getElementById('attached-files')
+    const payloadEl = document.getElementById('payload')
+
+    let activeIndex = 0
+    let filteredFiles = []
+    let attachedFiles = []
+
+    function autoResize() {
+      textarea.style.height = 'auto'
+      textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px'
+    }
+
+    textarea.addEventListener('input', () => {
+      autoResize()
+
+      const cursorPos = textarea.selectionStart
+      const textBeforeCursor = textarea.value.slice(0, cursorPos)
+      console.log(textBeforeCursor, cursorPos)
+
+      const match = textBeforeCursor.match(/(^|[\s])@(\w*)$/)
+      if (match) {
+        const query = match[2].toLowerCase()
+        filteredFiles = FILES.filter((f) => {
+          return f.name.toLowerCase().includes(query)
+        })
+        renderPopover(filteredFiles)
+        showPopover(filteredFiles)
+        activeIndex = 0
+      } else {
+        hidePopover()
+      }
+    })
+
+    // Keyboard navigations
+    textarea.addEventListener('keydown', (e) => {
+      if (popover.classList.contains('visible')) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          activeIndex = (activeIndex + 1) % filteredFiles.length
+          renderPopover(filteredFiles)
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          activeIndex = (activeIndex - 1 + filteredFiles.length) % filteredFiles.length
+          renderPopover(filteredFiles)
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault()
+          selectMention(filteredFiles[activeIndex])
+        } else if (e.key === 'Escape') {
+          hidePopover()
+        }
+        return
+      }
+
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        send()
+      }
+    })
+
+
+    function selectMention(file) {
+      const cursorPosition = textarea.selectionStart
+      const textBeforeCursor = textarea.value.slice(0, cursorPosition)
+      const textAfterCursor = textarea.value.slice(cursorPosition)
+
+      const newBefore = textBeforeCursor.replace(
+        /(^|[\s])@\w*$/,
+        `$1@${file.name} `
+      )
+    }
+
+    function showPopover(files) {
+      if (files.length === 0) {
+        hidePopover()
+        return
+      }
+      popover.classList.add('visible')
+    }
+
+    function hidePopover() {
+      popover.classList.remove('visible')
+    }
+
+    function renderPopover(files) {
+      popover.innerHTML = files.map(
+        (f, i) => `
+         <div class="mention-item ${i === activeIndex ? 'active' : ''}"
+             onmousedown="selectMention(FILES.find(x => x.id === ${f.id}))">
+          <span class="icon">${f.icon}</span>
+          <div>
+            <div class="name">${f.name}</div>
+            <div class="desc">${f.desc}</div>
+          </div>
+        </div>
+        `
+      ).join('')
+    }
+
+    function send() {
+      const text = textarea.value.trim()
+      if (!text) return
+
+      const payload = {
+        message: text,
+      }
+
+      payloadEl.textContent = JSON.stringify(payload, null, 2)
+
+      //Reset
+      textarea.value = ''
+      autoResize()
+    }
+  </script>
+</body>
+
 </html>

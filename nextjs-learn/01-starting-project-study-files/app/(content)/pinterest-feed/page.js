@@ -188,7 +188,7 @@ export default function PinterestFeedPage() {
     intersectionObserverRef.current = new IntersectionObserver(
       handleIntersection,
       {
-        rootMargin: '400px',
+        rootMargin: '100px',
       }
     )
     if (sentinelRef.current) {
