@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+      background: #1a1a2e;
+      color: #eee;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 600px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: #16213e;
+      border-radius: 12px;
+      align-items: flex-end;
+    }
+
+    .editor {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 14px;
+      min-height: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      outline: none;
+      line-height: 1.8;
+      word-break: break-word;
+    }
+
+    .editor:focus {
+      border-color: #e94560
+    }
+
+    .editor:empty::before {
+      content: attr(data-placeholder);
+      color: #777;
+      pointer-events: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #e94560;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 1px;
+      margin-top: auto;
+
+    }
+
+    button:hover {
+      background: #d63848;
+    }
+
+    .mention-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      margin: 0 2px;
+      background: linear-gradient(135deg, #0f3460, #1a5276);
+      border: 1px solid #2980b9;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #8ec5fc;
+      cursor: default;
+      user-select: all;
+      /* clicking selects the whole chip */
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+
+    .mention-chip .chip-icon {
+      font-size: 12px;
+    }
+
+    /* Popover */
+    .mention-popover {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 12px;
+      margin-bottom: 8px;
+      background: #16213e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+      min-width: 250px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      max-height: 10rem;
+      overflow-y: scroll;
+    }
+
+    .mention-popover.visible {
+      display: block;
+    }
+
+    .mention-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .mention-item:hover,
+    .mention-item.active {
+      background: #0f3460;
+    }
+
+
+    .output {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #16213e;
+      border-radius: 0.5rem;
+      font-size: 14px;
+    }
+
+    .output pre {
+      margin: 4px 0;
+      background: #1a1a2e;
+      padding: 8px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+
+    }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="input-wrapper">
+      <div class="mention-popover" id="popover"></div>
+      <div class="editor" contenteditable="true" data-placeholder="Type @ to mention a file..." id="editor"></div>
+      <button onclick="send()">Send</button>
+    </div>
+    <div class="output">
+      <div class="output-grid">
+        <div>
+          <strong>text content</strong>
+          <pre id="text-out">...</pre>
+        </div>
+        <div>
+          <strong>inner html</strong>
+          <pre id="html-out">...</pre>
+        </div>
+      </div>
+      <strong>extracted mentions</strong>
+      <pre id="mentions-out">...</pre>
+    </div>
+  </div>
+  <script>
+    const FILES = [
+      { id: 1, name: 'schema.sql', icon: '🗄️', desc: 'Database schema' },
+      { id: 2, name: 'app.js', icon: '📄', desc: 'Main application' },
+      { id: 3, name: 'package.json', icon: '📦', desc: 'Dependencies' },
+      { id: 4, name: 'styles.css', icon: '🎨', desc: 'Global styles' },
+      { id: 5, name: 'server.js', icon: '🖥️', desc: 'Express server' },
+    ]
+    const editor = document.getElementById('editor');
+    const popover = document.getElementById('popover')
+
+    let activeIndex = 0;
+    let filterd
+
+
+    editor.addEventListener('input', function () {
+      if (this.innerHTML === '<br>') {
+        this.innerHTML = '';
+      }
+
+      document.getElementById('text-out').textContent = editor.textContent
+      document.getElementById('html-out').textContent = editor.innerHTML
+
+      detectMentionTrigger();
+    });
+
+    editor.addEventListener('keydown', (e) => {
+      if (popover.classList.contains('visible')) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          activeIndex = (activeIndex + 1) % filteredFiles.length
+          renderPopover(filteredFiles)
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          activeIndex =
+            (activeIndex - 1 + filteredFiles.length) % filteredFiles.length
+          renderPopover(filteredFiles)
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault()
+          selectMention(filteredFiles[activeIndex])
+        } else if (e.key === 'Escape') {
+          hidePopover()
+        }
+        return
+      }
+
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        send()
+      }
+    })
+
+    editor.addEventListener('paste', (e) => {
+      e.preventDefault()
+      const text = e.clipboardData.getData('text/plain')
+      document.execCommand('insertText', false, text)
+    })
+
+
+    function detectMentionTrigger() {
+      const sel = window.getSelection()
+
+      if (!sel.rangeCount) return
+
+      // get the text content before the cursor
+      const range = sel.getRangeAt(0);
+      const preCaretRange = range.cloneRange()
+
+      preCaretRange.selectNodeContents(editor)
+      preCaretRange.setEnd(range.endContainer, range.endOffset)
+
+      const textBeforeCursor = preCaretRange.toString()
+
+      const match = textBeforeCursor.match(/(^|[\s])@(\w*)$/)
+
+      if (match) {
+        const query = match[2].toLowerCase()
+        filteredFiles = FILES.filter((f) => {
+          return f.name.toLowerCase().includes(query)
+        })
+        activeIndex = 0
+        showPopover(filteredFiles)
+      } else {
+        hidePopover()
+      }
+
+
+    }
+    function showPopover(files) {
+      if (files.length === 0) {
+        hidePopover()
+        return
+      }
+      renderPopover(files)
+      popover.classList.add('visible')
+    }
+
+
+    function hidePopover() {
+      popover.classList.remove('visible')
+    }
+
+    function renderPopover(files) {
+      popover.innerHTML = files.map((f, i) => {
+        return `<div class="mention-item ${i === activeIndex ? "active" : ''}" onmousedown="event.preventDefault(); selectMention(FILES.find(f =>f.id == ${f.id}))" >
+          <span class="icon">${f.icon}</span>
+          <div>
+            <div class="name">${f.name}</div>
+            <div class="desc">${f.desc}</div>
+          </div>
+          </div>`
+      }).join('')
+    }
+
+    function selectMention(file) {
+      const sel = window.getSelection()
+
+      if (!sel.rangeCount) return
+
+      // get the text content before the cursor
+      const range = sel.getRangeAt(0);
+      const preCaretRange = range.cloneRange()
+      preCaretRange.selectNodeContents(editor)
+      preCaretRange.setEnd(range.startContainer, range.startOffset)
+
+      const textBefore = preCaretRange.toString();
+      const atMatch = textBefore.match(/(^|[\s])@(\w*)$/)
+
+
+      if (atMatch) {
+        // Delete the "@query" characters
+        const deleteLength =
+          atMatch[0].length - (atMatch[1] ? atMatch[1].length : 0)
+        range.setStart(range.startContainer, range.startOffset - deleteLength)
+        range.deleteContents()
+      }
+
+      const chip = document.createElement('span');
+      chip.className = "mention-chip";
+      chip.contentEditable = 'false';
+      chip.dataset.fileId = file.id;
+      chip.dataset.fileName = file.name;
+
+      chip.innerHTML = `<span class="chip-icon">${file.icon}</span>`;
+
+      range.insertNode(chip);
+
+      const space = document.createTextNode('\u00A0');
+      chip.after(space)
+
+      // Move cursor after the space
+      const newRange = document.createRange();
+      newRange.setStartAfter(space);
+      newRange.collapse(true);
+      sel.removeAllRanges()
+      sel.addRange(newRange)
+
+      hidePopover()
+      editor.dispatchEvent(new Event('input'))
+
+    }
+
+    function extractMentions() {
+      const chips = editor.querySelectorAll('.mention-chip')
+      return Array.from(chips).map((chip) => ({
+        id: Number(chip.dataset.fileId),
+        name: chip.dataset.fileName,
+      }))
+    }
+
+
+
+
+
+    function send() {
+      const text = editor.textContent.trim()
+      if (!text) return
+
+      const payload = {
+        message: text, // plain text for LLM
+        mentions: extractMentions(), // structured data for backend
+      }
+
+      console.log('Sending:', payload)
+      document.getElementById('mentions-out').textContent = JSON.stringify(
+        payload,
+        null,
+        2
+      )
+
+      editor.innerHTML = ''
+    }
+  </script>
+</body>
+
+</html>
+<!-- 
+### Try it
+
+1. Type `@app` — popover filters, select with Enter
+2. A **styled chip** appears inline: `📄 app.js`
+3. Try clicking the chip — it selects as a **whole unit**
+4. Press **Backspace** on the chip — entire chip is deleted (not letter-by-letter)
+5. Watch the output panel — see `textContent` vs `innerHTML` vs `extractMentions()`
+
+### This is the key difference from textarea:
+
+```
+Textarea:                               Contenteditable:
+"Fix @schema.sql please"               "Fix 🗄️schema.sql please"
+  ↑ plain text, @ is just a char         ↑ chip is a styled <span> element
+  ↑ can type inside "schema"              ↑ can't edit inside the chip
+  ↑ backspace deletes one char            ↑ backspace deletes whole chip
+```
+
+--- -->
