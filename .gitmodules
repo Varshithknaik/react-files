@@ -4,3 +4,6 @@
 [submodule "dockers/docker-complex"]
 	path = dockers/docker-complex
 	url = https://github.com/Varshithknaik/docker-complex.git
+[submodule "portfolio"]
+	path = portfolio
+	url = https://github.com/Varshithknaik/portfolio.git
