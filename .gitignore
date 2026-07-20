@@ -9,3 +9,4 @@
 **/tsconfig.tsbuildinfo
 **/dockerbuild.sh
 **/dev-dist
+**/.DS_Store
