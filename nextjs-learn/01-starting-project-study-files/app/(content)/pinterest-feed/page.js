@@ -99,7 +99,7 @@ export default function PinterestFeedPage() {
     if (newlyPainted.length > 0) {
       setPainetedPins((prev) => [...prev, ...newlyPainted])
     }
-  })
+  }, [])
 
   const loadBatch = useCallback(async () => {
     if (loadingRef.current || !hasMoreRef.current) return
