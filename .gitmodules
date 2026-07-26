@@ -10,3 +10,6 @@
 [submodule "distributed-oder-system-re"]
 	path = distributed-oder-system-re
 	url = https://github.com/Varshithknaik/distributed-oder-system-re.git
+[submodule "mfe-lect"]
+	path = mfe-lect
+	url = https://github.com/Varshithknaik/mfe-lect.git
