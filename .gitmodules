@@ -7,3 +7,6 @@
 [submodule "portfolio"]
 	path = portfolio
 	url = https://github.com/Varshithknaik/portfolio.git
+[submodule "distributed-oder-system-re"]
+	path = distributed-oder-system-re
+	url = https://github.com/Varshithknaik/distributed-oder-system-re.git
