@@ -3,9 +3,15 @@ import { useEffect, useState } from "react"
 import CommentCreate from "./CommentCreate"
 import CommentList from "./CommentList"
 
+type Comment = {
+  id: string
+  content: string
+}
+
 type Post = {
   id: string
   title: string
+  comments: Comment[]
 }
 
 export default function PostList() {
@@ -14,8 +20,9 @@ export default function PostList() {
   useEffect(() => {
     const fetchPosts = async () => {
       const response = await axios.get<Record<string, Post>>(
-        'http://localhost:4000/posts',
+        'http://localhost:4002/posts',
       )
+      console.log(response)
 
       setPosts(response.data)
     }
@@ -28,7 +35,7 @@ export default function PostList() {
       <div className="card" style={{ width: '30%', marginBottom: '20px' }} key={post.id}>
         <div className="card-body">
           <h3>{post.title}</h3>
-          <CommentList postId={post.id} />
+          <CommentList comments={post.comments} />
           <CommentCreate postId={post.id} />
         </div>
       </div>
