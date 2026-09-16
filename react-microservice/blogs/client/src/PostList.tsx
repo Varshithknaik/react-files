@@ -6,6 +6,7 @@ import CommentList from "./CommentList"
 type Comment = {
   id: string
   content: string
+  status: string
 }
 
 type Post = {
