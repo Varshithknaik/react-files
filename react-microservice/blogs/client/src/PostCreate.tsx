@@ -7,7 +7,7 @@ export default function PostCreate() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const response = await axios.post('http://posts.com/posts', { title })
+    const response = await axios.post('http://posts.com/posts/create', { title })
     console.log(response.data)
     setTitle("")
   }
