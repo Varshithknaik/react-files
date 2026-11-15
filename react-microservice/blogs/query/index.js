@@ -10,6 +10,9 @@ app.use(cors())
 
 const posts = {}
 
+const sleep = (milliseconds) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds))
+
 const handleEvent = (type, data) => {
   if (type === 'PostCreated') {
     const { id, title } = data
@@ -45,13 +48,34 @@ app.post('/events', (req, res) => {
   res.status(200).send({ status: 'OK' })
 })
 
-app.listen(4002, async () => {
+const loadEvents = async () => {
+  let attempt = 0
+
+  while (true) {
+    try {
+      const { data } = await axios.get('http://event-bus-srv:4005/events')
+      const { events } = data
+
+      for (const event of events) {
+        handleEvent(event.type, event.data)
+      }
+
+      return
+    } catch (error) {
+      attempt += 1
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 10000)
+
+      console.error(
+        `Event bus unavailable (attempt ${attempt}). Retrying in ${delay}ms...`,
+        error.code,
+      )
+      await sleep(delay)
+    }
+  }
+}
+
+app.listen(4002, () => {
   console.log('Listening on 4002')
 
-  await axios.get('http://event-bus-srv:4005/events').then((res) => {
-    const { events } = res.data
-    for (const event of events) {
-      handleEvent(event.type, event.data)
-    }
-  })
+  loadEvents()
 })

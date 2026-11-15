@@ -5,9 +5,14 @@ import babel from '@rolldown/plugin-babel'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    host: true,
+    port: 5173,
+    allowedHosts: ['posts.com'],
+  },
   resolve: {
     alias: {
-      '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
+      '~bootstrap': path.resolve(import.meta.dirname, 'node_modules/bootstrap'),
     },
   },
   plugins: [
@@ -15,6 +20,7 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
   ],
   preview: {
-    allowedHosts: ['posts.com']
-  }
+    host: true,
+    allowedHosts: ['posts.com'],
+  },
 })

@@ -38,4 +38,4 @@ spec:
               service:
                 name: client-clusterip-srv
                 port:
-                  number: 4173
+                  number: 5173

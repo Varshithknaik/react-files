@@ -26,5 +26,5 @@ spec:
     app: client
   ports:
     - name: client
-      port: 4173
-      targetPort: 4173
+      port: 5173
+      targetPort: 5173
